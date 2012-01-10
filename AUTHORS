@@ -1,0 +1,7 @@
+The primary author of SQLAlchemy-ORM-tree is Mark Friedenbach
+<mark@roku-sigma.com>.
+
+Others who have contributed to the application:
+
+ * Jonathan Buchanan et al. (authors of Django MPTT)
+ * Anton Gritsay <anton@angri.ru> (author of SQLAMP)
