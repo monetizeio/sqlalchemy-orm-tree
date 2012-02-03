@@ -176,7 +176,7 @@ class TreeTestMixin(object):
   def _fill_tree(self):
     def _create_node(name, fields, parent=None):
       node = Named(name=name)
-      Named.tree.insert_node(node, parent, session=db.session)
+      Named.tree.insert_node(node, parent)
       db.session.add(node)
       db.session.commit()
       return node
