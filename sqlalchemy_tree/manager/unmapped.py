@@ -210,8 +210,8 @@ class TreeManager(object):
 
       # FIXME: Figure out what this root_node_class business is about.
       assert objtype is root_node_class, \
-             "TreeClassManager should be accessed via base class in the " \
-             "polymorphic inheritance hierarchy: %r" % root_node_class
+             u"TreeClassManager should be accessed via its base class in " \
+             u"the polymorphic inheritance hierarchy: %r" % root_node_class
 
       return self._get_class_manager(root_node_class)
 

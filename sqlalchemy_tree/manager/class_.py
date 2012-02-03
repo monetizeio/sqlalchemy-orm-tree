@@ -217,7 +217,13 @@ class TreeClassManager(object):
   POSITION_FIRST_CHILD = 'first-child'
   POSITION_LAST_CHILD  = 'last-child'
 
-  def insert_node(self, node, target=None, position=POSITION_LAST_CHILD, session=None):
+  def insert_node(self, node, target=None, position=POSITION_LAST_CHILD):
+    ""
+    options = self._tree_options
+    setattr(node, options.get_delayed_op_attr(node.__class__), (target, position))
+    setattr(node, options.parent_id_field.name, None)
+
+  def _insert_node(self, node, target=None, position=POSITION_LAST_CHILD, session=None):
     """Sets up the tree state (``tree_id``, ``left``, ``right`` and ``depth``)
     for ``node`` (which has not yet been inserted into in the database) so it
     will be positioned relative to a given ``target`` node in the manner
