@@ -117,6 +117,7 @@ class TreeOptions(object):
     self.table                 = table
     self._node_manager_attr    = None
     self.instance_manager_attr = instance_manager_attr
+    self.delayed_op_attr       = None
 
     # FIXME: Add support for composite primary keys.
     assert len(table.primary_key.columns) == 1, \
@@ -229,6 +230,12 @@ class TreeOptions(object):
         lambda x: isinstance(x[1], TreeManager),
         node_class.__dict__.items())[0][0]
     return self._node_manager_attr
+  def get_delayed_op_attr(self, node_class):
+    if self.delayed_op_attr is None:
+      self.get_node_manager_attr(node_class)
+      self.delayed_op_attr = '__'.join(
+        [self._node_manager_attr, 'delayed_op'])
+    return self.delayed_op_attr
 
   def order_by_clause(self):
     """Get an object applicable for usage as an argument for
