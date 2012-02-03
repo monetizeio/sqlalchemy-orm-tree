@@ -129,8 +129,13 @@ class TreeInstanceManager(TreeClassManager):
   :param obj:
     particular node instance.
   """
-  __slots__ = ('_tree_options', '_obj_ref', 'class_manager', 'node_class')
+  __slots__ = ('_tree_options', '_obj_ref', 'class_manager', 'node_class',
+               'mapper_extension', 'session_extension')
   def __init__(self, class_manager, obj, *args, **kwargs):
+    kwargs.setdefault('options',           class_manager._tree_options)
+    kwargs.setdefault('node_class',        class_manager.node_class)
+    kwargs.setdefault('mapper_extension',  class_manager.mapper_extension)
+    kwargs.setdefault('session_extension', class_manager.session_extension)
     super(TreeInstanceManager, self).__init__(*args, **kwargs)
     # The object is stored behind a weakref so that the Python interpreter
     # does the right thing and garbage collects the object if the only pointer

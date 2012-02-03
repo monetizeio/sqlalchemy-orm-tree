@@ -97,7 +97,10 @@ import sqlalchemy
 
 __all__ = (
   'TreeMapperExtension',
+  'TreeSessionExtension',
 )
+
+# ===----------------------------------------------------------------------===
 
 class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
   """An extension to a node class' mapper, handling insertion, deletion, and
@@ -114,6 +117,32 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
 
   def before_insert(self, mapper, connection, instance):
     "A previously non-existent node will be inserted into the tree."
+    pass
+
+  def before_update(self, mapper, connection, instance):
+    "A existent node is about to be updated."
+    pass
+
+# ===----------------------------------------------------------------------===
+
+class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
+  """An session extension handling insertion, deletion, and updates of tree
+  nodes. This class is instantiated by the manager object, and the average
+  developer need not bother himself with it.
+
+  :param options:
+    instance of :class:`TreeOptions`
+  :param node_class:
+    the mapped object class for tree nodes
+  """
+  def __init__(self, options, node_class):
+    super(TreeSessionExtension, self).__init__()
+    # Save the options for future use.
+    self._tree_options = options
+    self._node_class   = node_class
+
+  def before_flush(self, session, flush_context, instances):
+    ""
     options = self._tree_options
 
     node_manager_attr = options.get_node_manager_attr(instance)

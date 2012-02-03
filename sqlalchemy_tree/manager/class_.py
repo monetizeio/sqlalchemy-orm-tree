@@ -106,10 +106,12 @@ class TreeClassManager(object):
   :param options:
     instance of :class:``TreeOptions``
   """
-  def __init__(self, node_class, options):
+  def __init__(self, node_class, options, mapper_extension, session_extension):
     # Save our parameters for future use:
-    self._tree_options = options
-    self.node_class    = node_class
+    self._tree_options     = options
+    self.node_class        = node_class
+    self.mapper_extension  = mapper_extension
+    self.session_extension = session_extension
 
   def __clause_element__(self):
     """Allows to use instances of ``TreeClassManager`` directly as argument

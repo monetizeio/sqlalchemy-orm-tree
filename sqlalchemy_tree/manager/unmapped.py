@@ -97,7 +97,7 @@ import sqlalchemy
 from sqlalchemy.orm.mapper import class_mapper
 
 from sqlalchemy_tree.options import TreeOptions
-from sqlalchemy_tree.orm     import TreeMapperExtension
+from sqlalchemy_tree.orm     import TreeMapperExtension, TreeSessionExtension
 from .instance import TreeInstanceManager
 from .class_   import TreeClassManager
 
@@ -170,10 +170,11 @@ class TreeManager(object):
                                             '_tree_instance_manager')
     kwargs['instance_manager_attr'] = self.instance_manager_attr
     opts = TreeOptions(*args, **kwargs)
-    self.options          = opts
-    self.class_manager    = None
-    self.mapper_extension = TreeMapperExtension(options=opts)
-    self.root_node_class  = None
+    self.options           = opts
+    self.class_manager     = None
+    self.mapper_extension  = TreeMapperExtension(options=opts)
+    self.session_extension = None
+    self.root_node_class   = None
 
   def __get__(self, obj, objtype):
     """There may be three kinds of return values from this getter.
@@ -223,9 +224,7 @@ class TreeManager(object):
         root_node_class = self._get_root_node_class(objtype)
         instance_manager = TreeInstanceManager(
           class_manager = self._get_class_manager(root_node_class),
-          obj           = obj,
-          node_class    = root_node_class,
-          options       = self.options)
+          obj           = obj)
         setattr(obj, self.instance_manager_attr, instance_manager)
 
       # ...and return the instance manager to the caller:
@@ -237,9 +236,13 @@ class TreeManager(object):
     # be regenerated every time. It's created on first call to this method and
     # not in __init__ as the class won't be mapped at that time.
     if self.class_manager is None:
+      self.session_extension = TreeSessionExtension(
+        options=self.options, node_class=objtype)
       self.class_manager = TreeClassManager(
-        node_class = objtype,
-        options    = self.options)
+        node_class        = objtype,
+        options           = self.options,
+        mapper_extension  = self.mapper_extension,
+        session_extension = self.session_extension)
     return self.class_manager
 
   def _get_root_node_class(self, objtype):
