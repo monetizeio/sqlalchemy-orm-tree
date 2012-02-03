@@ -97,6 +97,8 @@ import sqlalchemy
 
 from .types import TreeIdType, TreeLeftType, TreeRightType, TreeDepthType
 
+# ===----------------------------------------------------------------------===
+
 class TreeOptions(object):
   """A container for options for one tree.
 
