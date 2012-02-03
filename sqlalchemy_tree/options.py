@@ -222,12 +222,12 @@ class TreeOptions(object):
   # FIXME: This is really hackish, but needed by the mapper extension. At some
   #        point we should find a better way to do what we need this for in
   #        the mapper extension, and get rid of this code entirely.
-  def get_node_manager_attr(self, node):
+  def get_node_manager_attr(self, node_class):
     from .manager import TreeManager
     if self._node_manager_attr is None:
       self._node_manager_attr = filter(
         lambda x: isinstance(x[1], TreeManager),
-        node.__class__.__dict__.items())[0][0]
+        node_class.__dict__.items())[0][0]
     return self._node_manager_attr
 
   def order_by_clause(self):
