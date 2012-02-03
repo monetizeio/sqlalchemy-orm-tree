@@ -323,6 +323,52 @@ class TreeClassManager(object):
       setattr(node, options.tree_id_field.name,   tree_id)
       setattr(node, options.parent_id_field.name, parent_id)
 
+  def _delete_node(self, node, session=None):
+    ""
+    options = self._tree_options
+
+    tree_id = getattr(node, options.tree_id_field.name)
+    expr = options.table.update() \
+      .values({options.tree_id_field.name: self._get_next_tree_id(session)}) \
+      .where(options.pk_field == getattr(node, options.pk_field.name))
+    session.execute(expr)
+
+    if getattr(node, options.left_field.name) == 1:
+      instance_manager = getattr(node, options.get_node_manager_attr(self.node_class))
+      children = instance_manager.query_children() \
+                                 .order_by(options.left_field) \
+                                 .all()
+      self._manage_tree_gap(len(children)-1, tree_id, session)
+      next_tree_id = tree_id
+      for child in children:
+        shift = getattr(child, options.left_field.name) - 1
+        expr = options.table.update() \
+          .values({options.tree_id_field.name: next_tree_id,
+                   options.depth_field.name:   options.depth_field - 1,
+                   options.left_field.name:    options.left_field  - shift,
+                   options.right_field.name:   options.right_field - shift}) \
+          .where((options.tree_id_field == tree_id) & \
+                 (options.left_field >= getattr(child, options.left_field.name)) & \
+                 (options.left_field <= getattr(child, options.right_field.name)))
+        session.execute(expr)
+        next_tree_id += 1
+
+    else:
+      left  = getattr(node, options.left_field.name)
+      right = getattr(node, options.right_field.name)
+
+      expr = options.table.update() \
+        .values({options.depth_field.name: options.depth_field - 1}) \
+        .where((options.tree_id_field == tree_id) & \
+               (options.left_field > left) & \
+               (options.left_field < right))
+      session.execute(expr)
+
+      # The second update is `right - 1` because the first gap closing has
+      # already shifted the relevant nodes down one position.
+      self._close_gap(1, left,    tree_id, session)
+      self._close_gap(1, right-1, tree_id, session)
+
   def _get_next_tree_id(self, session):
     """Determines the next largest unused tree id for the tree managed by this
     manager."""
