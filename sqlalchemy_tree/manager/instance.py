@@ -357,7 +357,7 @@ class TreeInstanceManager(TreeClassManager):
       session = obj_session
 
     # Have SQLAlchemy generate and return a new query object:
-    return sqlalchemy.orm.Query(self._node_class, session=session)
+    return sqlalchemy.orm.Query(self.node_class, session=session)
 
   # FIXME: For some operations, `_get_session_and_assert_flushed` is called
   #        more than once by various layers in the call stack. This doesn't

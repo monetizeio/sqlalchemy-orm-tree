@@ -109,7 +109,7 @@ class TreeClassManager(object):
   def __init__(self, node_class, options):
     # Save our parameters for future use:
     self._tree_options = options
-    self._node_class = node_class
+    self.node_class    = node_class
 
   def __clause_element__(self):
     """Allows to use instances of ``TreeClassManager`` directly as argument
@@ -140,7 +140,7 @@ class TreeClassManager(object):
       #       only be ``None`` if called from an instance manager of a node
       #       associated with a session.
       session = sqlalchemy.orm.object_session(self._get_obj())
-    return session.query(self._node_class) \
+    return session.query(self.node_class) \
                   .filter(self.filter_root_nodes(*args, **kwargs))
 
   def filter_root_node_by_tree_id(self, *args):
@@ -161,7 +161,7 @@ class TreeClassManager(object):
       #       only be ``None`` if called from an instance manager of a node
       #       associated with a session.
       session = sqlalchemy.orm.object_session(self._get_obj())
-    return session.query(self._node_class) \
+    return session.query(self.node_class) \
                   .filter(self.filter_root_node_by_tree_id(*args, **kwargs))
 
   def filter_root_node_of_node(self, *args):
@@ -191,7 +191,7 @@ class TreeClassManager(object):
       if session is None:
         session
       session = sqlalchemy.orm.object_session(self._get_obj())
-    return session.query(self._node_class) \
+    return session.query(self.node_class) \
                   .filter(self.filter_root_node_of_node(*args, **kwargs))
 
   # Constants used to specify a desired position relative to another node, for
@@ -241,7 +241,7 @@ class TreeClassManager(object):
     # Basic sanity check--this code is for inserting new nodes, not moving
     # existing nodes around.
     pk = getattr(node, options.pk_field.name)
-    if pk is not None and session.query(self._node_class) \
+    if pk is not None and session.query(self.node_class) \
                                  .filter(options.pk_field==pk).limit(1).count():
       raise ValueError(
         _(u"cannot insert a node which has already been saved; use " \
@@ -383,7 +383,7 @@ class TreeClassManager(object):
       depth_change = target_depth - node_depth
       parent = getattr(target, options.parent_id_field.name)
       if parent:
-        parent = session.query(self._node_class).filter(options.pk_field==parent).one()
+        parent = session.query(self.node_class).filter(options.pk_field==parent).one()
 
     else:
       raise ValueError(_(u"an invalid position was given: %s") % position)
