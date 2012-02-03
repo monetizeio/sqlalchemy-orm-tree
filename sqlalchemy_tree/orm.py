@@ -145,27 +145,46 @@ class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
     ""
     options = self._tree_options
 
-    node_manager_attr = options.get_node_manager_attr(instance)
-    instance_manager  = getattr(instance, node_manager_attr)
-    class_manager     = instance_manager.class_manager
+    node_manager_attr = options.get_node_manager_attr(self._node_class)
+    class_manager     = getattr(self._node_class, node_manager_attr)
 
-    parent = parent_id = getattr(instance, options.parent_id_field.name)
-    if parent:
-      session = sqlalchemy.orm.object_session(instance)
-      parent  = session.query(class_manager._node_class) \
-                       .filter(instance_manager.filter_parent()).one()
-    tree_id = getattr(instance, options.tree_id_field.name)
-    left    = getattr(instance, options.left_field.name)
-    right   = getattr(instance, options.right_field.name)
+    def _get_insert_params(node):
+      delayed_op_attr = options.get_delayed_op_attr(self._node_class)
 
-    if tree_id is None or left is None or right is None:
-      class_manager.insert_node(instance, parent)
+      if hasattr(node, delayed_op_attr):
+        return getattr(node, delayed_op_attr)
 
-    if parent is None:
-      depth = 0
-    else:
-      depth = getattr(parent, options.depth_field.name) + 1
-    setattr(instance, options.depth_field.name, depth)
+      elif (node in session.new or
+            sqlalchemy.orm.attributes.get_history(
+              node, options.parent_id_field.name).has_changes()):
+
+        if (hasattr(options, 'order_with_respect_to') and
+            len(options.order_with_respect_to)):
+          raise NotImplementedError
+
+        else:
+          position = class_manager.POSITION_LAST_CHILD
+          target   = getattr(node, options.parent_id_field.name)
+          if target:
+            target = session.query(self._node_class) \
+                            .filter(getattr(node, node_manager_attr) \
+                              .filter_parent()).one()
+
+        setattr(node, delayed_op_attr, (target, position))
+        return (target, position)
+
+      return None
+
+    for node in session.new:
+      target, position = _get_insert_params(node)
+      class_manager._insert_node(node, target, position, session)
+
+    for node in session.deleted:
+      class_manager._delete_node(node, session)
+
+    for node in session.dirty:
+      target, position = _get_insert_params(node)
+      class_manager._move_node(node, target, position, session)
 
 # ===----------------------------------------------------------------------===
 # End of File
