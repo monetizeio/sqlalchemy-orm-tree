@@ -116,6 +116,9 @@ class TreeManager(object):
     class Node(object):
       mp = sqlalchemy_tree.TreeManager(node_table)
 
+    # After Node is mapped:
+    Node.mp.register()
+
   Now there is an ability to get an instance manager or class manager via the
   property `'mp'` depending on the way in which it is accessed. `Node.mp` will
   return the mapper extension until the class is mapped (useful for setting up

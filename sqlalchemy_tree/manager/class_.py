@@ -125,6 +125,20 @@ class TreeClassManager(object):
     """
     return self._tree_options.order_by_clause()
 
+  def register(self):
+    ""
+    options = self._tree_options
+
+    sqlalchemy.event.listen(sqlalchemy.orm.session.Session,
+                            'before_flush',
+                            self.session_extension.before_flush)
+    sqlalchemy.event.listen(self.node_class,
+                            'before_insert',
+                            self.mapper_extension.before_insert)
+    sqlalchemy.event.listen(self.node_class,
+                            'before_update',
+                            self.mapper_extension.before_update)
+
   def filter_root_nodes(self):
     "Get a filter condition for all root nodes."
     options = self._tree_options

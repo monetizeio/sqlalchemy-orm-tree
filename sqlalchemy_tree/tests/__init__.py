@@ -137,11 +137,12 @@ named = Table('sqlalchemy_tree__tests__named', db.metadata,
     ForeignKey('sqlalchemy_tree__tests__named.id')),
 )
 Named.tree = TreeManager(named)
-mapper(Named, named, extension=[Named.tree], properties={
+mapper(Named, named, properties={
   'parent': relationship(Named,
     backref     = backref('children', lazy='dynamic'),
     remote_side = named.c.id),
 })
+Named.tree.register()
 
 # ===----------------------------------------------------------------------===
 
