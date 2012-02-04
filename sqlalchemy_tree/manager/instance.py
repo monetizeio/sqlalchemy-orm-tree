@@ -152,6 +152,10 @@ class TreeInstanceManager(TreeClassManager):
     return self._tree_options.parent_id_field
 
   @property
+  def parent_field_name(self):
+    return self._tree_options.parent_field_name
+
+  @property
   def tree_id_field(self):
     return self._tree_options.tree_id_field
 
@@ -172,10 +176,10 @@ class TreeInstanceManager(TreeClassManager):
     options = self._tree_options
     obj = self._get_obj()
     #self._get_session_and_assert_flushed(obj)
-    parent_id = getattr(obj, self.parent_id_field.name)
-    if parent_id is None:
+    parent = getattr(obj, self.parent_field_name)
+    if parent is None:
         return sqlalchemy.sql.literal(False)
-    filter_ = self.pk_field == parent_id
+    filter_ = self.pk_field == getattr(parent, self.pk_field.name)
     return filter_
 
   def filter_ancestors(self, and_self=False):

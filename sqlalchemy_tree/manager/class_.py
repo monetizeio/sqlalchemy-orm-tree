@@ -220,8 +220,8 @@ class TreeClassManager(object):
   def insert_node(self, node, target=None, position=POSITION_LAST_CHILD):
     ""
     options = self._tree_options
-    setattr(node, options.get_delayed_op_attr(node.__class__), (target, position))
     setattr(node, options.parent_id_field.name, None)
+    setattr(node, options.delayed_op_attr, (target, position))
 
   def _insert_node(self, node, target=None, position=POSITION_LAST_CHILD, session=None):
     """Sets up the tree state (``tree_id``, ``left``, ``right`` and ``depth``)
@@ -273,13 +273,13 @@ class TreeClassManager(object):
       # Easy: no target is specified, so place it as the root node of a new
       # tree. This requires just one query (to find the id of the new tree)
       # and no row updates.
-      setattr(node, options.parent_id_field.name, None)
-      setattr(node, options.tree_id_field.name,   self._get_next_tree_id(session))
-      setattr(node, options.left_field.name,      1)
-      setattr(node, options.right_field.name,     2)
-      setattr(node, options.depth_field.name,     0)
+      setattr(node, options.parent_field_name,  None)
+      setattr(node, options.tree_id_field.name, self._get_next_tree_id(session))
+      setattr(node, options.left_field.name,    1)
+      setattr(node, options.right_field.name,   2)
+      setattr(node, options.depth_field.name,   0)
 
-    elif getattr(target, options.parent_id_field.name) is None and \
+    elif getattr(target, options.parent_field_name) is None and \
          position in [self.POSITION_LEFT, self.POSITION_RIGHT]:
       # Almost as easy as the last case: the node will become a root node, so
       # we need only shift up by one the id value of any trees we are
@@ -292,11 +292,11 @@ class TreeClassManager(object):
         node_tree_id   = target_tree_id + 1
       self._manage_tree_gap(1, target_tree_id, session)
 
-      setattr(node, options.parent_id_field.name, None)
-      setattr(node, options.tree_id_field.name,   node_tree_id)
-      setattr(node, options.left_field.name,      1)
-      setattr(node, options.right_field.name,     2)
-      setattr(node, options.depth_field.name,     0)
+      setattr(node, options.parent_field_name,  None)
+      setattr(node, options.tree_id_field.name, node_tree_id)
+      setattr(node, options.left_field.name,    1)
+      setattr(node, options.right_field.name,   2)
+      setattr(node, options.depth_field.name,   0)
 
     else:
       # Otherwise our business is only slightly more messy. We need to
@@ -309,19 +309,17 @@ class TreeClassManager(object):
       gap_target, depth, left, parent, right_shift = \
         self._calculate_inter_tree_move_values(node, target, position, session)
       if parent is None:
-        parent_id = None
         tree_id   = None
       else:
-        parent_id = getattr(parent, options.pk_field.name)
         tree_id   = getattr(parent, options.tree_id_field.name)
 
       self._create_gap(right_shift, gap_target, tree_id, session)
 
-      setattr(node, options.left_field.name,      left)
-      setattr(node, options.right_field.name,     left + 1)
-      setattr(node, options.depth_field.name,     depth)
-      setattr(node, options.tree_id_field.name,   tree_id)
-      setattr(node, options.parent_id_field.name, parent_id)
+      setattr(node, options.left_field.name,    left)
+      setattr(node, options.right_field.name,   left + 1)
+      setattr(node, options.depth_field.name,   depth)
+      setattr(node, options.tree_id_field.name, tree_id)
+      setattr(node, options.parent_field_name,  parent)
 
   def _delete_node(self, node, session=None):
     ""
@@ -334,7 +332,7 @@ class TreeClassManager(object):
     session.execute(expr)
 
     if getattr(node, options.left_field.name) == 1:
-      instance_manager = getattr(node, options.get_node_manager_attr(self.node_class))
+      instance_manager = getattr(node, options.node_manager_attr)
       children = instance_manager.query_children() \
                                  .order_by(options.left_field) \
                                  .all()
@@ -449,9 +447,7 @@ class TreeClassManager(object):
       else:
         gap_target = target_right
       depth_change = target_depth - node_depth
-      parent = getattr(target, options.parent_id_field.name)
-      if parent:
-        parent = session.query(self.node_class).filter(options.pk_field==parent).one()
+      parent = getattr(target, options.parent_field_name)
 
     else:
       raise ValueError(_(u"an invalid position was given: %s") % position)

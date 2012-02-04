@@ -220,22 +220,37 @@ class TreeOptions(object):
     ]
     map(table.append_constraint, self.indices)
 
-  # FIXME: This is really hackish, but needed by the mapper extension. At some
-  #        point we should find a better way to do what we need this for in
-  #        the mapper extension, and get rid of this code entirely.
-  def get_node_manager_attr(self, node_class):
+  def class_mapped(self, manager):
+    ""
+    self.class_manager     = manager
+    self.node_class        = manager.node_class
+    self.node_manager_attr = self._get_node_manager_attr()
+    self.delayed_op_attr   = self._get_delayed_op_attr()
+    self.parent_field_name = self._get_parent_field_name()
+
+  def _get_node_manager_attr(self):
     from .manager import TreeManager
     if self._node_manager_attr is None:
       self._node_manager_attr = filter(
         lambda x: isinstance(x[1], TreeManager),
-        node_class.__dict__.items())[0][0]
+        self.node_class.__dict__.items())[0][0]
     return self._node_manager_attr
-  def get_delayed_op_attr(self, node_class):
+
+  def _get_delayed_op_attr(self):
     if self.delayed_op_attr is None:
-      self.get_node_manager_attr(node_class)
+      self._get_node_manager_attr()
       self.delayed_op_attr = '__'.join(
         [self._node_manager_attr, 'delayed_op'])
     return self.delayed_op_attr
+
+  def _get_parent_field_name(self):
+    for prop in self.node_class._sa_class_manager.mapper.iterate_properties:
+      if (len(prop.local_side) == 1 and
+          prop.local_side[0].name == self.parent_id_field.name):
+        return prop.key
+    # FIXME: We should raise an error or something--the tree extension will
+    #        not work property without a parent relationship defined.
+    return None
 
   def order_by_clause(self):
     """Get an object applicable for usage as an argument for

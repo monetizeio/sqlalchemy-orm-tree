@@ -145,30 +145,21 @@ class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
     ""
     options = self._tree_options
 
-    node_manager_attr = options.get_node_manager_attr(self._node_class)
-    class_manager     = getattr(self._node_class, node_manager_attr)
-
     def _get_insert_params(node):
-      delayed_op_attr = options.get_delayed_op_attr(self._node_class)
-
-      if hasattr(node, delayed_op_attr):
+      if hasattr(node, options.delayed_op_attr):
         return getattr(node, delayed_op_attr)
 
       elif (node in session.new or
             sqlalchemy.orm.attributes.get_history(
-              node, options.parent_id_field.name).has_changes()):
+              node, options.parent_field_name).has_changes()):
 
         if (hasattr(options, 'order_with_respect_to') and
             len(options.order_with_respect_to)):
           raise NotImplementedError
 
         else:
-          position = class_manager.POSITION_LAST_CHILD
-          target   = getattr(node, options.parent_id_field.name)
-          if target:
-            target = session.query(self._node_class) \
-                            .filter(getattr(node, node_manager_attr) \
-                              .filter_parent()).one()
+          position = options.class_manager.POSITION_LAST_CHILD
+          target   = getattr(node, options.parent_field_name)
 
         setattr(node, delayed_op_attr, (target, position))
         return (target, position)
@@ -177,10 +168,10 @@ class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
 
     for node in session.new:
       target, position = _get_insert_params(node)
-      class_manager._insert_node(node, target, position, session)
+      options.class_manager._insert_node(node, target, position, session)
 
     for node in session.deleted:
-      class_manager._delete_node(node, session)
+      options.class_manager._delete_node(node, session)
 
     for node in session.dirty:
       target, position = _get_insert_params(node)
