@@ -126,7 +126,7 @@ class Named(object):
 named = Table('sqlalchemy_tree__tests__named', db.metadata,
   # Primary-key:
   Column('id', Integer,
-    Sequence('proof_of_work__block__merkle_node__id_seq'),
+    Sequence('sqlalchemy_tree__tests__named__id_seq'),
     primary_key = True),
   # Unicode identifier:
   Column('name', Unicode,
