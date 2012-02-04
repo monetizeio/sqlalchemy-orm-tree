@@ -186,6 +186,9 @@ class TreeTestMixin(object):
       _process_node(root)
     db.session.commit()
   def setUp(self):
+    # Enable long-format diffs, which are necessary due to the large size of
+    # the assert comparisons we do.
+    self.maxDiff = None
     db.metadata.drop_all()
     db.metadata.create_all()
     db.session = db.Session()
