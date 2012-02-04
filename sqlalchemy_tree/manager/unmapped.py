@@ -246,6 +246,8 @@ class TreeManager(object):
         options           = self.options,
         mapper_extension  = self.mapper_extension,
         session_extension = self.session_extension)
+      self.options.class_mapped(
+        manager = self.class_manager)
     return self.class_manager
 
   def _get_root_node_class(self, objtype):
