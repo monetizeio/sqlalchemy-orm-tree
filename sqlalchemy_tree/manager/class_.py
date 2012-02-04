@@ -371,6 +371,59 @@ class TreeClassManager(object):
       self._close_gap(1, left,    tree_id, session)
       self._close_gap(1, right-1, tree_id, session)
 
+  def _move_node(self, node, target, position=POSITION_LAST_CHILD, session=None):
+    """Moves ``node`` relative to a given ``target`` node as specified by
+    ``position`` (when appropriate), by examining both nodes and calling the
+    appropriate method to perform the move.
+
+    A ``target`` of ``None`` indicates that ``node`` should be turned into a
+    root node.
+
+    Valid values for ``position`` are ``POSITION_LEFT``, ``POSITION_RIGHT``,
+    ``POSITION_FIRST_CHILD`` or ``POSITION_LAST_CHILD``.
+
+    ``node`` will be modified to reflect its new tree state in the database.
+    Depending on the type of the move, a good many other nodes might be
+    modified as well.
+
+    This method explicitly checks for ``node`` being made a sibling of a root
+    node, as this is a special case due to our use of tree ids to order root
+    nodes.
+
+    .. note::
+      This is a low-level method; it does NOT respect
+      ``MPTTMeta.order_insertion_by``. In most cases you should just move the
+      node yourself by setting node.parent.
+    """
+    options = self._tree_options
+
+    # We need a session object in order to make changes to the database. We
+    # give preference ot the session object associated with target over the
+    # one associated with node (if they're different), since node might not be
+    # associated with a session yet.
+    if session is None:
+      if target is not None:
+        session = sqlalchemy.orm.object_session(target)
+      else:
+        session = sqlalchemy.orm.object_session(node)
+
+    node_is_root_node = getattr(node, options.left_field.name) == 1
+
+    if target is None:
+      if not node_is_root_node:
+        self._make_child_root_node(session, node)
+
+    elif (node_is_root_node and
+          position in [self.POSITION_LEFT, self.POSITION_RIGHT]):
+      self._make_sibling_of_root_node(session, node, target, position)
+
+    else:
+      if node_is_root_node:
+        self._move_root_node(session, node, target, position)
+
+      else:
+        self._move_child_node(session, node, target, position)
+
   def _get_next_tree_id(self, session):
     """Determines the next largest unused tree id for the tree managed by this
     manager."""
@@ -463,6 +516,66 @@ class TreeClassManager(object):
       right_shift = node_right - node_left + 1
 
     return gap_target, depth_change, left_right_change, parent, right_shift
+
+  def _inter_tree_move_and_close_gap(self, session, node, depth_change,
+    left_right_change, new_tree_id, parent_pk=None):
+    """Removes ``node`` from its current tree, with the given set of changes
+    being applied to ``node`` and its descendants, closing the gap left by
+    moving ``node`` as it does so.
+
+    If ``parent_pk`` is ``None``, this indicates that ``node`` is being moved
+    to a brand new tree as its root node, and will thus have its parent field
+    set to ``NULL``. Otherwise, ``node`` will have ``parent_pk`` set for its
+    parent field."""
+    options = self._tree_options
+
+    left  = getattr(node, options.left_field.name)
+    right = getattr(node, options.right_field.name)
+    gap_size = right - left + 1
+    gap_target_left  = left - 1
+
+    expr = options.table.update() \
+      .values({
+        options.depth_field:     sqlalchemy.case(
+          [((options.left_field >= left) & (options.left_field <= right), options.depth_field - depth_change)],
+          else_ = options.depth_field),
+        options.tree_id_field:   sqlalchemy.case(
+          [((options.left_field >= left) & (options.left_field <= right), new_tree_id)],
+          else_ = options.tree_id_field),
+        options.left_field:      sqlalchemy.case(
+          [((options.left_field >= left) & (options.left_field <= right), options.left_field - left_right_change),
+           ((options.left_field > gap_target_left),                       options.left_field - gap_size)],
+          else_ = options.left_field),
+        options.right_field:     sqlalchemy.case(
+          [((options.right_field >= left) & (options.right_field <= right), options.right_field - left_right_change),
+           ((options.right_field > gap_target_left),                        options.right_field - gap_size)],
+          else_ = options.right_field),
+        options.parent_id_field: sqlalchemy.case(
+          [(options.pk_field == getattr(node, options.pk_field.name), parent_pk)],
+          else_ = options.parent_id_field),
+      }) \
+      .where(options.tree_id_field == getattr(node, options.tree_id_field.name))
+
+    session.execute(expr)
+
+    session.expire_all()
+
+  def _make_child_root_node(self, session, node, new_tree_id=None):
+    """Removes ``node`` from its tree, making it the root node of a new tree.
+    If ``new_tree_id`` is not specified a new tree id will be generated.
+    ``node`` will be modified to reflect its new tree state in the
+    database."""
+    options = self._tree_options
+
+    left  = getattr(node, options.left_field.name)
+    right = getattr(node, options.right_field.name)
+    depth = getattr(node, options.depth_field.name)
+    if not new_tree_id:
+      new_tree_id = self._get_next_tree_id(session)
+    left_right_change = left - 1
+
+    self._inter_tree_move_and_close_gap(session, node, depth,
+                                        left_right_change, new_tree_id)
 
 # ===----------------------------------------------------------------------===
 # End of File
