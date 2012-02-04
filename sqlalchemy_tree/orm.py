@@ -175,8 +175,10 @@ class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
       options.class_manager._delete_node(node, session)
 
     for node in session.dirty:
-      target, position = _get_insert_params(node)
-      class_manager._move_node(node, target, position, session)
+      params = _get_insert_params(node)
+      if params is not None:
+        target, position = params
+        options.class_manager._move_node(node, target, position, session)
 
 # ===----------------------------------------------------------------------===
 # End of File
