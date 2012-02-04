@@ -954,24 +954,213 @@ class ReparantingTestCase(NamedTestCase):
       'children': [],
       'descendants': []}),
   ]
-  def test_new_root_from_subtree(self):
-    self.skipTest(u"not implemented")
-    shmup = db.session.query(Named).filter_by(name='shmup').one()
-    shmup.parent = None
+  def test_new_root_from_subtree__platformer(self):
+    name = u"platformer"
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':8,  'depth':0}, [
+        (u"shmup",              {'id':1, 'left':2,  'right':7,  'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':2, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':2, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+      (u"platformer",           {'id':3, 'left':1,  'right':8,  'depth':0}, [
+        (u"platformer_2d",      {'id':3, 'left':2,  'right':3,  'depth':1}, []),
+        (u"platformer_3d",      {'id':3, 'left':4,  'right':5,  'depth':1}, []),
+        (u"platformer_4d",      {'id':3, 'left':6,  'right':7,  'depth':1}, []),
+      ]),
+    ]
+    node = db.session.query(Named).filter_by(name=name).one()
+    node.parent = None
     db.session.commit()
-    self.assertEqual(get_tree_details([shmup]), '6 - 3 0 1 6')
-    self.assertEqual(get_tree_details(db.session.query(Named).all()),
-                     tree_details("""1 - 1 0 1 10
-                                     2 1 1 1 2 9
-                                     3 2 1 2 3 4
-                                     4 2 1 2 5 6
-                                     5 2 1 2 7 8
-                                     9 - 2 0 1 6
-                                     10 9 2 1 2 3
-                                     11 9 2 1 4 5
-                                     6 - 3 0 1 6
-                                     7 6 3 1 2 3
-                                     8 6 3 1 4 5"""))
+    self.assertEqual(get_tree_details(), result)
+  def test_new_root_from_subtree__platformer_2d(self):
+    name = u"platformer_2d"
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':14, 'depth':0}, [
+        (u"platformer",         {'id':1, 'left':2,  'right':7,  'depth':1}, [
+          (u"platformer_3d",    {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_4d",    {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':1, 'left':8,  'right':13, 'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':9,  'right':10, 'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':11, 'right':12, 'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':2, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':2, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+      (u"platformer_2d",        {'id':3, 'left':1,  'right':2,  'depth':0}, []),
+    ]
+    node = db.session.query(Named).filter_by(name=name).one()
+    node.parent = None
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_new_root_from_subtree__platformer_3d(self):
+    name = u"platformer_3d"
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':14, 'depth':0}, [
+        (u"platformer",         {'id':1, 'left':2,  'right':7,  'depth':1}, [
+          (u"platformer_2d",    {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_4d",    {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':1, 'left':8,  'right':13, 'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':9,  'right':10, 'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':11, 'right':12, 'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':2, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':2, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+      (u"platformer_3d",        {'id':3, 'left':1,  'right':2,  'depth':0}, []),
+    ]
+    node = db.session.query(Named).filter_by(name=name).one()
+    node.parent = None
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_new_root_from_subtree__platformer_4d(self):
+    name = u"platformer_4d"
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':14, 'depth':0}, [
+        (u"platformer",         {'id':1, 'left':2,  'right':7,  'depth':1}, [
+          (u"platformer_2d",    {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':1, 'left':8,  'right':13, 'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':9,  'right':10, 'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':11, 'right':12, 'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':2, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':2, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+      (u"platformer_4d",        {'id':3, 'left':1,  'right':2,  'depth':0}, []),
+    ]
+    node = db.session.query(Named).filter_by(name=name).one()
+    node.parent = None
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_new_root_from_subtree__shmup(self):
+    name = u"shmup"
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':10, 'depth':0}, [
+        (u"platformer",         {'id':1, 'left':2,  'right':9,  'depth':1}, [
+          (u"platformer_2d",    {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+          (u"platformer_4d",    {'id':1, 'left':7,  'right':8,  'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':2, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':2, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+      (u"shmup",                {'id':3, 'left':1,  'right':6,  'depth':0}, [
+        (u"shmup_vertical",     {'id':3, 'left':2,  'right':3,  'depth':1}, []),
+        (u"shmup_horizontal",   {'id':3, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+    ]
+    node = db.session.query(Named).filter_by(name=name).one()
+    node.parent = None
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_new_root_from_subtree__shmup_vertical(self):
+    name = u"shmup_vertical"
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':14, 'depth':0}, [
+        (u"platformer",         {'id':1, 'left':2,  'right':9,  'depth':1}, [
+          (u"platformer_2d",    {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+          (u"platformer_4d",    {'id':1, 'left':7,  'right':8,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':1, 'left':10, 'right':13, 'depth':1}, [
+          (u"shmup_horizontal", {'id':1, 'left':11, 'right':12, 'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':2, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':2, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+      (u"shmup_vertical",       {'id':3, 'left':1,  'right':2,  'depth':0}, []),
+    ]
+    node = db.session.query(Named).filter_by(name=name).one()
+    node.parent = None
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_new_root_from_subtree__shmup_horizontal(self):
+    name = u"shmup_horizontal"
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':14, 'depth':0}, [
+        (u"platformer",         {'id':1, 'left':2,  'right':9,  'depth':1}, [
+          (u"platformer_2d",    {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+          (u"platformer_4d",    {'id':1, 'left':7,  'right':8,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':1, 'left':10, 'right':13, 'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':11, 'right':12, 'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':2, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':2, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+      (u"shmup_horizontal",     {'id':3, 'left':1,  'right':2,  'depth':0}, []),
+    ]
+    node = db.session.query(Named).filter_by(name=name).one()
+    node.parent = None
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_new_root_from_subtree__arpg(self):
+    name = u"arpg"
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':16, 'depth':0}, [
+        (u"platformer",         {'id':1, 'left':2,  'right':9,  'depth':1}, [
+          (u"platformer_2d",    {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+          (u"platformer_4d",    {'id':1, 'left':7,  'right':8,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':1, 'left':10, 'right':15, 'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':11, 'right':12, 'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':13, 'right':14, 'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':2, 'left':1,  'right':4,  'depth':0}, [
+        (u"trpg",               {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+      ]),
+      (u"arpg",                 {'id':3, 'left':1,  'right':2,  'depth':0}, []),
+    ]
+    node = db.session.query(Named).filter_by(name=name).one()
+    node.parent = None
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_new_root_from_subtree__trpg(self):
+    name = u"trpg"
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':16, 'depth':0}, [
+        (u"platformer",         {'id':1, 'left':2,  'right':9,  'depth':1}, [
+          (u"platformer_2d",    {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+          (u"platformer_4d",    {'id':1, 'left':7,  'right':8,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':1, 'left':10, 'right':15, 'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':11, 'right':12, 'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':13, 'right':14, 'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':2, 'left':1,  'right':4,  'depth':0}, [
+        (u"arpg",               {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+      ]),
+      (u"trpg",                 {'id':3, 'left':1,  'right':2,  'depth':0}, []),
+    ]
+    node = db.session.query(Named).filter_by(name=name).one()
+    node.parent = None
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
 
 # ===----------------------------------------------------------------------===
 # End of File
