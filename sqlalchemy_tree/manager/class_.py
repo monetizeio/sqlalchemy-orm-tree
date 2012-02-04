@@ -331,7 +331,7 @@ class TreeClassManager(object):
 
     tree_id = getattr(node, options.tree_id_field.name)
     expr = options.table.update() \
-      .values({options.tree_id_field.name: self._get_next_tree_id(session)}) \
+      .values({options.tree_id_field: self._get_next_tree_id(session)}) \
       .where(options.pk_field == getattr(node, options.pk_field.name))
     session.execute(expr)
 
@@ -345,10 +345,10 @@ class TreeClassManager(object):
       for child in children:
         shift = getattr(child, options.left_field.name) - 1
         expr = options.table.update() \
-          .values({options.tree_id_field.name: next_tree_id,
-                   options.depth_field.name:   options.depth_field - 1,
-                   options.left_field.name:    options.left_field  - shift,
-                   options.right_field.name:   options.right_field - shift}) \
+          .values({options.tree_id_field: next_tree_id,
+                   options.depth_field:   options.depth_field - 1,
+                   options.left_field:    options.left_field  - shift,
+                   options.right_field:   options.right_field - shift}) \
           .where((options.tree_id_field == tree_id) & \
                  (options.left_field >= getattr(child, options.left_field.name)) & \
                  (options.left_field <= getattr(child, options.right_field.name)))
@@ -360,7 +360,7 @@ class TreeClassManager(object):
       right = getattr(node, options.right_field.name)
 
       expr = options.table.update() \
-        .values({options.depth_field.name: options.depth_field - 1}) \
+        .values({options.depth_field: options.depth_field - 1}) \
         .where((options.tree_id_field == tree_id) & \
                (options.left_field > left) & \
                (options.left_field < right))
@@ -386,7 +386,7 @@ class TreeClassManager(object):
     options = self._tree_options
 
     expr = options.table.update() \
-      .values({options.tree_id_field.name: options.tree_id_field + size}) \
+      .values({options.tree_id_field: options.tree_id_field + size}) \
       .where(options.tree_id_field > target_tree_id)
 
     session.execute(expr)
