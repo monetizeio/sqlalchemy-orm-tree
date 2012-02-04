@@ -325,6 +325,10 @@ class TreeClassManager(object):
     ""
     options = self._tree_options
 
+    # We need a session object in order to make changes to the database.
+    if session is None:
+      session = sqlalchemy.orm.object_session(node)
+
     tree_id = getattr(node, options.tree_id_field.name)
     expr = options.table.update() \
       .values({options.tree_id_field.name: self._get_next_tree_id(session)}) \
