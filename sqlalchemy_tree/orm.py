@@ -147,7 +147,9 @@ class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
 
     def _get_insert_params(node):
       if hasattr(node, options.delayed_op_attr):
-        return getattr(node, delayed_op_attr)
+        params = getattr(node, options.delayed_op_attr)
+        delattr(node, options.delayed_op_attr)
+        return params
 
       elif (node in session.new or
             sqlalchemy.orm.attributes.get_history(
@@ -161,7 +163,6 @@ class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
           position = options.class_manager.POSITION_LAST_CHILD
           target   = getattr(node, options.parent_field_name)
 
-        setattr(node, delayed_op_attr, (target, position))
         return (target, position)
 
       return None
