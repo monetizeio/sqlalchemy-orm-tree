@@ -220,8 +220,8 @@ class TreeClassManager(object):
   def insert_node(self, node, target=None, position=POSITION_LAST_CHILD):
     ""
     options = self._tree_options
-    setattr(node, options.parent_id_field.name, None)
     setattr(node, options.delayed_op_attr, (target, position))
+    sqlalchemy.orm.attributes.instance_state(node).modified = True
 
   def _insert_node(self, node, target=None, position=POSITION_LAST_CHILD, session=None):
     """Sets up the tree state (``tree_id``, ``left``, ``right`` and ``depth``)
