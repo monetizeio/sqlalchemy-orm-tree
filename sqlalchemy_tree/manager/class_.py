@@ -136,8 +136,20 @@ class TreeClassManager(object):
                             'before_insert',
                             self.mapper_extension.before_insert)
     sqlalchemy.event.listen(self.node_class,
+                            'after_insert',
+                            self.mapper_extension.after_insert)
+    sqlalchemy.event.listen(self.node_class,
+                            'before_delete',
+                            self.mapper_extension.before_delete)
+    sqlalchemy.event.listen(self.node_class,
+                            'after_delete',
+                            self.mapper_extension.after_delete)
+    sqlalchemy.event.listen(self.node_class,
                             'before_update',
                             self.mapper_extension.before_update)
+    sqlalchemy.event.listen(self.node_class,
+                            'after_update',
+                            self.mapper_extension.after_update)
 
   def filter_root_nodes(self):
     "Get a filter condition for all root nodes."
@@ -201,12 +213,11 @@ class TreeClassManager(object):
         session = sqlalchemy.orm.object_session(node)
         if session is not None:
           break
-      # NOTE: ``self._get_obj`` only exists on instance managers--session may
-      #       only be ``None`` if called from an instance manager of a node
+      # NOTE: ``self._get_obj`` only exists on instance managers--this
+      #       fallback only works from an instance manager of a node
       #       associated with a session.
       if session is None:
-        session
-      session = sqlalchemy.orm.object_session(self._get_obj())
+        session = sqlalchemy.orm.object_session(self._get_obj())
     return session.query(self.node_class) \
                   .filter(self.filter_root_node_of_node(*args, **kwargs))
 
@@ -217,365 +228,13 @@ class TreeClassManager(object):
   POSITION_FIRST_CHILD = 'first-child'
   POSITION_LAST_CHILD  = 'last-child'
 
-  def insert_node(self, node, target=None, position=POSITION_LAST_CHILD):
+  def insert(self, node, target=None, position=POSITION_LAST_CHILD, session=None):
     ""
     options = self._tree_options
+
     setattr(node, options.delayed_op_attr, (target, position))
-    sqlalchemy.orm.attributes.instance_state(node).modified = True
 
-  def _insert_node(self, node, target=None, position=POSITION_LAST_CHILD, session=None):
-    """Sets up the tree state (``tree_id``, ``left``, ``right`` and ``depth``)
-    for ``node`` (which has not yet been inserted into in the database) so it
-    will be positioned relative to a given ``target`` node in the manner
-    specified by ``position``, with any necessary space already having been
-    made for it.
-
-    A ``target`` of ``None`` indicates that ``node`` should become the last
-    root node, which is a constant-time insertion operation. (Positioning root
-    nodes with respect to other root nodes can be accomplished by using the
-    ``POSITION_LEFT`` or ``POSITION_RIGHT`` constants and specifying the
-    neighboring root node as ``target``)
-
-    Accepted values for ``position`` are ``POSITION_FIRST_CHILD``,
-    ``POSITION_LAST_CHILD``, ``POSITION_LEFT`` or ``POSITION_RIGHT``.
-    ``POSITION_LAST_CHILD`` is likely to cause the least number of row
-    updates, so therefore it is the default behavior if ``position`` is not
-    specified.
-
-    .. note::
-      This is a low-level method; and naturally does NOT respect
-      ``TreeOptions.order_insertion_by``. In most cases you should just set
-      the node's parent and let this library call handle the details of
-      insertion during the database flush.
-    """
-    options = self._tree_options
-
-    # We need a session object in order to make changes to the database. We
-    # give preference ot the session object associated with target over the
-    # one associated with node (if they're different), since node might not be
-    # associated with a session yet.
-    if session is None:
-      if target is not None:
-        session = sqlalchemy.orm.object_session(target)
-      else:
-        session = sqlalchemy.orm.object_session(node)
-
-    # Basic sanity check--this code is for inserting new nodes, not moving
-    # existing nodes around.
-    pk = getattr(node, options.pk_field.name)
-    if pk is not None and session.query(self.node_class) \
-                                 .filter(options.pk_field==pk).limit(1).count():
-      raise ValueError(
-        _(u"cannot insert a node which has already been saved; use " \
-          u"move_node() instead"))
-
-    if target is None:
-      # Easy: no target is specified, so place it as the root node of a new
-      # tree. This requires just one query (to find the id of the new tree)
-      # and no row updates.
-      setattr(node, options.parent_field_name,  None)
-      setattr(node, options.tree_id_field.name, self._get_next_tree_id(session))
-      setattr(node, options.left_field.name,    1)
-      setattr(node, options.right_field.name,   2)
-      setattr(node, options.depth_field.name,   0)
-
-    elif getattr(target, options.parent_field_name) is None and \
-         position in [self.POSITION_LEFT, self.POSITION_RIGHT]:
-      # Almost as easy as the last case: the node will become a root node, so
-      # we need only shift up by one the id value of any trees we are
-      # displacing.
-      target_tree_id = getattr(target, options.tree_id_field.name)
-      if position == self.POSITION_LEFT:
-        node_tree_id   = target_tree_id
-        target_tree_id = target_tree_id - 1
-      else:
-        node_tree_id   = target_tree_id + 1
-      self._manage_tree_gap(1, target_tree_id, session)
-
-      setattr(node, options.parent_field_name,  None)
-      setattr(node, options.tree_id_field.name, node_tree_id)
-      setattr(node, options.left_field.name,    1)
-      setattr(node, options.right_field.name,   2)
-      setattr(node, options.depth_field.name,   0)
-
-    else:
-      # Otherwise our business is only slightly more messy. We need to
-      # allocate space in the tree structure for our new node by shifting all
-      # nodes to the right up by two spaces.
-      setattr(node, options.left_field.name,  0)
-      setattr(node, options.right_field.name, 1)
-      setattr(node, options.depth_field.name, 0)
-
-      gap_target, depth, left, parent, right_shift = \
-        self._calculate_inter_tree_move_values(node, target, position, session)
-      if parent is None:
-        tree_id   = None
-      else:
-        tree_id   = getattr(parent, options.tree_id_field.name)
-
-      self._create_gap(right_shift, gap_target, tree_id, session)
-
-      setattr(node, options.left_field.name,    left)
-      setattr(node, options.right_field.name,   left + 1)
-      setattr(node, options.depth_field.name,   depth)
-      setattr(node, options.tree_id_field.name, tree_id)
-      setattr(node, options.parent_field_name,  parent)
-
-  def _delete_node(self, node, session=None):
-    ""
-    options = self._tree_options
-
-    # We need a session object in order to make changes to the database.
-    if session is None:
-      session = sqlalchemy.orm.object_session(node)
-
-    tree_id = getattr(node, options.tree_id_field.name)
-    expr = options.table.update() \
-      .values({options.tree_id_field: self._get_next_tree_id(session)}) \
-      .where(options.pk_field == getattr(node, options.pk_field.name))
-    session.execute(expr)
-
-    if getattr(node, options.left_field.name) == 1:
-      instance_manager = getattr(node, options.node_manager_attr)
-      children = instance_manager.query_children() \
-                                 .order_by(options.left_field) \
-                                 .all()
-      self._manage_tree_gap(len(children)-1, tree_id, session)
-      next_tree_id = tree_id
-      for child in children:
-        shift = getattr(child, options.left_field.name) - 1
-        expr = options.table.update() \
-          .values({options.tree_id_field: next_tree_id,
-                   options.depth_field:   options.depth_field - 1,
-                   options.left_field:    options.left_field  - shift,
-                   options.right_field:   options.right_field - shift}) \
-          .where((options.tree_id_field == tree_id) & \
-                 (options.left_field >= getattr(child, options.left_field.name)) & \
-                 (options.left_field <= getattr(child, options.right_field.name)))
-        session.execute(expr)
-        next_tree_id += 1
-
-    else:
-      left  = getattr(node, options.left_field.name)
-      right = getattr(node, options.right_field.name)
-
-      expr = options.table.update() \
-        .values({options.depth_field: options.depth_field - 1}) \
-        .where((options.tree_id_field == tree_id) & \
-               (options.left_field > left) & \
-               (options.left_field < right))
-      session.execute(expr)
-
-      # The second update is `right - 1` because the first gap closing has
-      # already shifted the relevant nodes down one position.
-      self._close_gap(1, left,    tree_id, session)
-      self._close_gap(1, right-1, tree_id, session)
-
-  def _move_node(self, node, target, position=POSITION_LAST_CHILD, session=None):
-    """Moves ``node`` relative to a given ``target`` node as specified by
-    ``position`` (when appropriate), by examining both nodes and calling the
-    appropriate method to perform the move.
-
-    A ``target`` of ``None`` indicates that ``node`` should be turned into a
-    root node.
-
-    Valid values for ``position`` are ``POSITION_LEFT``, ``POSITION_RIGHT``,
-    ``POSITION_FIRST_CHILD`` or ``POSITION_LAST_CHILD``.
-
-    ``node`` will be modified to reflect its new tree state in the database.
-    Depending on the type of the move, a good many other nodes might be
-    modified as well.
-
-    This method explicitly checks for ``node`` being made a sibling of a root
-    node, as this is a special case due to our use of tree ids to order root
-    nodes.
-
-    .. note::
-      This is a low-level method; it does NOT respect
-      ``MPTTMeta.order_insertion_by``. In most cases you should just move the
-      node yourself by setting node.parent.
-    """
-    options = self._tree_options
-
-    # We need a session object in order to make changes to the database. We
-    # give preference ot the session object associated with target over the
-    # one associated with node (if they're different), since node might not be
-    # associated with a session yet.
-    if session is None:
-      if target is not None:
-        session = sqlalchemy.orm.object_session(target)
-      else:
-        session = sqlalchemy.orm.object_session(node)
-
-    node_is_root_node = getattr(node, options.left_field.name) == 1
-
-    if target is None:
-      if not node_is_root_node:
-        self._make_child_root_node(session, node)
-
-    elif (node_is_root_node and
-          position in [self.POSITION_LEFT, self.POSITION_RIGHT]):
-      self._make_sibling_of_root_node(session, node, target, position)
-
-    else:
-      if node_is_root_node:
-        self._move_root_node(session, node, target, position)
-
-      else:
-        self._move_child_node(session, node, target, position)
-
-  def _get_next_tree_id(self, session):
-    """Determines the next largest unused tree id for the tree managed by this
-    manager."""
-    options = self._tree_options
-
-    return session.query((
-      sqlalchemy.func.max(options.tree_id_field) + 1).label('tree_id')) \
-      .all()[0][0] or 1
-
-  def _manage_tree_gap(self, size, target_tree_id, session):
-    """Creates space for a new tree *after* the target by incrementing all
-    tree id's greater than ``target_tree_id``."""
-    options = self._tree_options
-
-    expr = options.table.update() \
-      .values({options.tree_id_field: options.tree_id_field + size}) \
-      .where(options.tree_id_field > target_tree_id)
-
-    session.execute(expr)
-
-  def _manage_space(self, size, target, tree_id, session):
-    """Manages spaces in the tree identified by ``tree_id`` by changing the
-    values of the left and right columns by ``size`` after the given
-    ``target`` point."""
-    options = self._tree_options
-
-    expr = options.table.update() \
-      .values({
-        options.left_field:  sqlalchemy.case(
-          [(options.left_field > target, options.left_field + size)],
-          else_ = options.left_field),
-        options.right_field: sqlalchemy.case(
-          [(options.right_field > target, options.right_field + size)],
-          else_ = options.right_field),
-      }) \
-      .where(
-        (options.tree_id_field == tree_id) &
-        ((options.left_field  > target) |
-         (options.right_field > target))
-      )
-
-    session.execute(expr)
-
-  def _create_gap(self, size, target, tree_id, session):
-    """Creates a space of a certain ``size`` after the given ``target`` point
-    in the tree identified by ``tree_id``."""
-    self._manage_space(size, target, tree_id, session)
-
-  def _close_gap(self, size, target, tree_id, session):
-    """Closes a gap of a certain ``size`` after the given ``target`` point in
-    the tree identified by ``tree_id``."""
-    self._manage_space(-size, target, tree_id, session)
-
-  def _calculate_inter_tree_move_values(self, node, target, position, session):
-    """Calculates values required when moving ``node`` relative to ``target``
-    as specified by ``position`` (one of ``left``, ``right``, ``first-child``
-    or ``last-child``)."""
-    options = self._tree_options
-
-    node_left    = getattr(node,   options.left_field.name)
-    node_right   = getattr(node,   options.right_field.name)
-    node_depth   = getattr(node,   options.depth_field.name)
-    target_left  = getattr(target, options.left_field.name)
-    target_right = getattr(target, options.right_field.name)
-    target_depth = getattr(target, options.depth_field.name)
-
-    if position == self.POSITION_LAST_CHILD or position == self.POSITION_FIRST_CHILD:
-      if position == self.POSITION_LAST_CHILD:
-        gap_target = target_right - 1
-      else:
-        gap_target = target_left
-      depth_change = target_depth - node_depth + 1
-      parent = target
-
-    elif position == self.POSITION_LEFT or position == self.POSITION_RIGHT:
-      if position == self.POSITION_LEFT:
-        gap_target = target_left - 1
-      else:
-        gap_target = target_right
-      depth_change = target_depth - node_depth
-      parent = getattr(target, options.parent_field_name)
-
-    else:
-      raise ValueError(_(u"an invalid position was given: %s") % position)
-
-    left_right_change = gap_target - node_left + 1
-
-    right_shift = 0
-    if parent:
-      right_shift = node_right - node_left + 1
-
-    return gap_target, depth_change, left_right_change, parent, right_shift
-
-  def _inter_tree_move_and_close_gap(self, session, node, depth_change,
-    left_right_change, new_tree_id, parent_pk=None):
-    """Removes ``node`` from its current tree, with the given set of changes
-    being applied to ``node`` and its descendants, closing the gap left by
-    moving ``node`` as it does so.
-
-    If ``parent_pk`` is ``None``, this indicates that ``node`` is being moved
-    to a brand new tree as its root node, and will thus have its parent field
-    set to ``NULL``. Otherwise, ``node`` will have ``parent_pk`` set for its
-    parent field."""
-    options = self._tree_options
-
-    left  = getattr(node, options.left_field.name)
-    right = getattr(node, options.right_field.name)
-    gap_size = right - left + 1
-    gap_target_left  = left - 1
-
-    expr = options.table.update() \
-      .values({
-        options.depth_field:     sqlalchemy.case(
-          [((options.left_field >= left) & (options.left_field <= right), options.depth_field - depth_change)],
-          else_ = options.depth_field),
-        options.tree_id_field:   sqlalchemy.case(
-          [((options.left_field >= left) & (options.left_field <= right), new_tree_id)],
-          else_ = options.tree_id_field),
-        options.left_field:      sqlalchemy.case(
-          [((options.left_field >= left) & (options.left_field <= right), options.left_field - left_right_change),
-           ((options.left_field > gap_target_left),                       options.left_field - gap_size)],
-          else_ = options.left_field),
-        options.right_field:     sqlalchemy.case(
-          [((options.right_field >= left) & (options.right_field <= right), options.right_field - left_right_change),
-           ((options.right_field > gap_target_left),                        options.right_field - gap_size)],
-          else_ = options.right_field),
-        options.parent_id_field: sqlalchemy.case(
-          [(options.pk_field == getattr(node, options.pk_field.name), parent_pk)],
-          else_ = options.parent_id_field),
-      }) \
-      .where(options.tree_id_field == getattr(node, options.tree_id_field.name))
-
-    session.execute(expr)
-
-    session.expire_all()
-
-  def _make_child_root_node(self, session, node, new_tree_id=None):
-    """Removes ``node`` from its tree, making it the root node of a new tree.
-    If ``new_tree_id`` is not specified a new tree id will be generated.
-    ``node`` will be modified to reflect its new tree state in the
-    database."""
-    options = self._tree_options
-
-    left  = getattr(node, options.left_field.name)
-    right = getattr(node, options.right_field.name)
-    depth = getattr(node, options.depth_field.name)
-    if not new_tree_id:
-      new_tree_id = self._get_next_tree_id(session)
-    left_right_change = left - 1
-
-    self._inter_tree_move_and_close_gap(session, node, depth,
-                                        left_right_change, new_tree_id)
+    setattr(node, options.tree_id_field.name, 0)
 
 # ===----------------------------------------------------------------------===
 # End of File

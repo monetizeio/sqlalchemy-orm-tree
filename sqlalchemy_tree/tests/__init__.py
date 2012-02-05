@@ -173,7 +173,7 @@ class TreeTestMixin(object):
   def _fill_tree(self):
     def _create_node(name, fields, parent=None):
       node = Named(name=name)
-      Named.tree.insert_node(node, parent)
+      Named.tree.insert(node, parent)
       db.session.add(node)
       db.session.commit()
       return node
@@ -1159,6 +1159,318 @@ class ReparantingTestCase(NamedTestCase):
     ]
     node = db.session.query(Named).filter_by(name=name).one()
     node.parent = None
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_make_sibling_of_root__platformer__action__left(self):
+    node_name   = u"platformer"
+    target_name = u"action"
+    position    = Named.tree.POSITION_LEFT
+    result = [
+      (u"platformer",           {'id':1, 'left':1,  'right':8,  'depth':0}, [
+        (u"platformer_2d",      {'id':1, 'left':2,  'right':3,  'depth':1}, []),
+        (u"platformer_3d",      {'id':1, 'left':4,  'right':5,  'depth':1}, []),
+        (u"platformer_4d",      {'id':1, 'left':6,  'right':7,  'depth':1}, []),
+      ]),
+      (u"action",               {'id':2, 'left':1,  'right':8,  'depth':0}, [
+        (u"shmup",              {'id':2, 'left':2,  'right':7,  'depth':1}, [
+          (u"shmup_vertical",   {'id':2, 'left':3,  'right':4,  'depth':2}, []),
+          (u"shmup_horizontal", {'id':2, 'left':5,  'right':6,  'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':3, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':3, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':3, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+    ]
+    node   = db.session.query(Named).filter_by(name=node_name).one()
+    target = db.session.query(Named).filter_by(name=target_name).one()
+    Named.tree.insert(node, target, position)
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_make_sibling_of_root__platformer__action__right(self):
+    node_name   = u"platformer"
+    target_name = u"action"
+    position    = Named.tree.POSITION_RIGHT
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':8,  'depth':0}, [
+        (u"shmup",              {'id':1, 'left':2,  'right':7,  'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+        ]),
+      ]),
+      (u"platformer",           {'id':2, 'left':1,  'right':8,  'depth':0}, [
+        (u"platformer_2d",      {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+        (u"platformer_3d",      {'id':2, 'left':4,  'right':5,  'depth':1}, []),
+        (u"platformer_4d",      {'id':2, 'left':6,  'right':7,  'depth':1}, []),
+      ]),
+      (u"rpg",                  {'id':3, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':3, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':3, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+    ]
+    node   = db.session.query(Named).filter_by(name=node_name).one()
+    target = db.session.query(Named).filter_by(name=target_name).one()
+    Named.tree.insert(node, target, position)
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_make_sibling_of_root__platformer__rpg__left(self):
+    node_name   = u"platformer"
+    target_name = u"rpg"
+    position    = Named.tree.POSITION_LEFT
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':8,  'depth':0}, [
+        (u"shmup",              {'id':1, 'left':2,  'right':7,  'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+        ]),
+      ]),
+      (u"platformer",           {'id':2, 'left':1,  'right':8,  'depth':0}, [
+        (u"platformer_2d",      {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+        (u"platformer_3d",      {'id':2, 'left':4,  'right':5,  'depth':1}, []),
+        (u"platformer_4d",      {'id':2, 'left':6,  'right':7,  'depth':1}, []),
+      ]),
+      (u"rpg",                  {'id':3, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':3, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':3, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+    ]
+    node   = db.session.query(Named).filter_by(name=node_name).one()
+    target = db.session.query(Named).filter_by(name=target_name).one()
+    Named.tree.insert(node, target, position)
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_make_sibling_of_root__platformer__rpg__right(self):
+    node_name   = u"platformer"
+    target_name = u"rpg"
+    position    = Named.tree.POSITION_RIGHT
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':8,  'depth':0}, [
+        (u"shmup",              {'id':1, 'left':2,  'right':7,  'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':2, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':2, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+      (u"platformer",           {'id':3, 'left':1,  'right':8,  'depth':0}, [
+        (u"platformer_2d",      {'id':3, 'left':2,  'right':3,  'depth':1}, []),
+        (u"platformer_3d",      {'id':3, 'left':4,  'right':5,  'depth':1}, []),
+        (u"platformer_4d",      {'id':3, 'left':6,  'right':7,  'depth':1}, []),
+      ]),
+    ]
+    node   = db.session.query(Named).filter_by(name=node_name).one()
+    target = db.session.query(Named).filter_by(name=target_name).one()
+    Named.tree.insert(node, target, position)
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_make_sibling_of_root__arpg__action__left(self):
+    node_name   = u"arpg"
+    target_name = u"action"
+    position    = Named.tree.POSITION_LEFT
+    result = [
+      (u"arpg",                 {'id':1, 'left':1,  'right':2,  'depth':0}, []),
+      (u"action",               {'id':2, 'left':1,  'right':16, 'depth':0}, [
+        (u"platformer",         {'id':2, 'left':2,  'right':9,  'depth':1}, [
+          (u"platformer_2d",    {'id':2, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':2, 'left':5,  'right':6,  'depth':2}, []),
+          (u"platformer_4d",    {'id':2, 'left':7,  'right':8,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':2, 'left':10, 'right':15, 'depth':1}, [
+          (u"shmup_vertical",   {'id':2, 'left':11, 'right':12, 'depth':2}, []),
+          (u"shmup_horizontal", {'id':2, 'left':13, 'right':14, 'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':3, 'left':1,  'right':4,  'depth':0}, [
+        (u"trpg",               {'id':3, 'left':2,  'right':3,  'depth':1}, []),
+      ]),
+    ]
+    node   = db.session.query(Named).filter_by(name=node_name).one()
+    target = db.session.query(Named).filter_by(name=target_name).one()
+    Named.tree.insert(node, target, position)
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_make_sibling_of_root__arpg__action__right(self):
+    node_name   = u"arpg"
+    target_name = u"action"
+    position    = Named.tree.POSITION_RIGHT
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':16, 'depth':0}, [
+        (u"platformer",         {'id':1, 'left':2,  'right':9,  'depth':1}, [
+          (u"platformer_2d",    {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+          (u"platformer_4d",    {'id':1, 'left':7,  'right':8,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':1, 'left':10, 'right':15, 'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':11, 'right':12, 'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':13, 'right':14, 'depth':2}, []),
+        ]),
+      ]),
+      (u"arpg",                 {'id':2, 'left':1,  'right':2,  'depth':0}, []),
+      (u"rpg",                  {'id':3, 'left':1,  'right':4,  'depth':0}, [
+        (u"trpg",               {'id':3, 'left':2,  'right':3,  'depth':1}, []),
+      ]),
+    ]
+    node   = db.session.query(Named).filter_by(name=node_name).one()
+    target = db.session.query(Named).filter_by(name=target_name).one()
+    Named.tree.insert(node, target, position)
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_make_sibling_of_root__arpg__action__left(self):
+    node_name   = u"arpg"
+    target_name = u"rpg"
+    position    = Named.tree.POSITION_LEFT
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':16, 'depth':0}, [
+        (u"platformer",         {'id':1, 'left':2,  'right':9,  'depth':1}, [
+          (u"platformer_2d",    {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+          (u"platformer_4d",    {'id':1, 'left':7,  'right':8,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':1, 'left':10, 'right':15, 'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':11, 'right':12, 'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':13, 'right':14, 'depth':2}, []),
+        ]),
+      ]),
+      (u"arpg",                 {'id':2, 'left':1,  'right':2,  'depth':0}, []),
+      (u"rpg",                  {'id':3, 'left':1,  'right':4,  'depth':0}, [
+        (u"trpg",               {'id':3, 'left':2,  'right':3,  'depth':1}, []),
+      ]),
+    ]
+    node   = db.session.query(Named).filter_by(name=node_name).one()
+    target = db.session.query(Named).filter_by(name=target_name).one()
+    Named.tree.insert(node, target, position)
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_make_sibling_of_root__arpg__action__right(self):
+    node_name   = u"arpg"
+    target_name = u"rpg"
+    position    = Named.tree.POSITION_RIGHT
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':16, 'depth':0}, [
+        (u"platformer",         {'id':1, 'left':2,  'right':9,  'depth':1}, [
+          (u"platformer_2d",    {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+          (u"platformer_4d",    {'id':1, 'left':7,  'right':8,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':1, 'left':10, 'right':15, 'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':11, 'right':12, 'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':13, 'right':14, 'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':2, 'left':1,  'right':4,  'depth':0}, [
+        (u"trpg",               {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+      ]),
+      (u"arpg",                 {'id':3, 'left':1,  'right':2,  'depth':0}, []),
+    ]
+    node   = db.session.query(Named).filter_by(name=node_name).one()
+    target = db.session.query(Named).filter_by(name=target_name).one()
+    Named.tree.insert(node, target, position)
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_make_sibling_of_root__action__rpg__left(self):
+    node_name   = u"action"
+    target_name = u"rpg"
+    position    = Named.tree.POSITION_LEFT
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':16, 'depth':0}, [
+        (u"platformer",         {'id':1, 'left':2,  'right':9,  'depth':1}, [
+          (u"platformer_2d",    {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+          (u"platformer_4d",    {'id':1, 'left':7,  'right':8,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':1, 'left':10, 'right':15, 'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':11, 'right':12, 'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':13, 'right':14, 'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':2, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':2, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+    ]
+    node   = db.session.query(Named).filter_by(name=node_name).one()
+    target = db.session.query(Named).filter_by(name=target_name).one()
+    Named.tree.insert(node, target, position)
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_make_sibling_of_root__action__rpg__right(self):
+    node_name   = u"action"
+    target_name = u"rpg"
+    position    = Named.tree.POSITION_RIGHT
+    result = [
+      (u"rpg",                  {'id':1, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':1, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':1, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+      (u"action",               {'id':2, 'left':1,  'right':16, 'depth':0}, [
+        (u"platformer",         {'id':2, 'left':2,  'right':9,  'depth':1}, [
+          (u"platformer_2d",    {'id':2, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':2, 'left':5,  'right':6,  'depth':2}, []),
+          (u"platformer_4d",    {'id':2, 'left':7,  'right':8,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':2, 'left':10, 'right':15, 'depth':1}, [
+          (u"shmup_vertical",   {'id':2, 'left':11, 'right':12, 'depth':2}, []),
+          (u"shmup_horizontal", {'id':2, 'left':13, 'right':14, 'depth':2}, []),
+        ]),
+      ]),
+    ]
+    node   = db.session.query(Named).filter_by(name=node_name).one()
+    target = db.session.query(Named).filter_by(name=target_name).one()
+    Named.tree.insert(node, target, position)
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_make_sibling_of_root__rpg__action__left(self):
+    node_name   = u"rpg"
+    target_name = u"action"
+    position    = Named.tree.POSITION_LEFT
+    result = [
+      (u"rpg",                  {'id':1, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':1, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':1, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+      (u"action",               {'id':2, 'left':1,  'right':16, 'depth':0}, [
+        (u"platformer",         {'id':2, 'left':2,  'right':9,  'depth':1}, [
+          (u"platformer_2d",    {'id':2, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':2, 'left':5,  'right':6,  'depth':2}, []),
+          (u"platformer_4d",    {'id':2, 'left':7,  'right':8,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':2, 'left':10, 'right':15, 'depth':1}, [
+          (u"shmup_vertical",   {'id':2, 'left':11, 'right':12, 'depth':2}, []),
+          (u"shmup_horizontal", {'id':2, 'left':13, 'right':14, 'depth':2}, []),
+        ]),
+      ]),
+    ]
+    node   = db.session.query(Named).filter_by(name=node_name).one()
+    target = db.session.query(Named).filter_by(name=target_name).one()
+    Named.tree.insert(node, target, position)
+    db.session.commit()
+    self.assertEqual(get_tree_details(), result)
+  def test_make_sibling_of_root__rpg__action__right(self):
+    node_name   = u"rpg"
+    target_name = u"action"
+    position    = Named.tree.POSITION_RIGHT
+    result = [
+      (u"action",               {'id':1, 'left':1,  'right':16, 'depth':0}, [
+        (u"platformer",         {'id':1, 'left':2,  'right':9,  'depth':1}, [
+          (u"platformer_2d",    {'id':1, 'left':3,  'right':4,  'depth':2}, []),
+          (u"platformer_3d",    {'id':1, 'left':5,  'right':6,  'depth':2}, []),
+          (u"platformer_4d",    {'id':1, 'left':7,  'right':8,  'depth':2}, []),
+        ]),
+        (u"shmup",              {'id':1, 'left':10, 'right':15, 'depth':1}, [
+          (u"shmup_vertical",   {'id':1, 'left':11, 'right':12, 'depth':2}, []),
+          (u"shmup_horizontal", {'id':1, 'left':13, 'right':14, 'depth':2}, []),
+        ]),
+      ]),
+      (u"rpg",                  {'id':2, 'left':1,  'right':6,  'depth':0}, [
+        (u"arpg",               {'id':2, 'left':2,  'right':3,  'depth':1}, []),
+        (u"trpg",               {'id':2, 'left':4,  'right':5,  'depth':1}, []),
+      ]),
+    ]
+    node   = db.session.query(Named).filter_by(name=node_name).one()
+    target = db.session.query(Named).filter_by(name=target_name).one()
+    Named.tree.insert(node, target, position)
     db.session.commit()
     self.assertEqual(get_tree_details(), result)
 
