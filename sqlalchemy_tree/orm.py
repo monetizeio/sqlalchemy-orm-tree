@@ -629,6 +629,62 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
 
       setattr(node, options.tree_id_field.name, new_tree_id)
 
+  def _move_root_node(self, connection, node, target, position):
+    """Moves root node``node`` to a different tree, inserting it relative to
+    the given ``target`` node as specified by ``position``."""
+    options = self._tree_options
+
+    tree_id     = getattr(node,   options.tree_id_field.name)
+    left        = getattr(node,   options.left_field.name)
+    right       = getattr(node,   options.right_field.name)
+    depth       = getattr(node,   options.depth_field.name)
+    new_tree_id = getattr(target, options.tree_id_field.name)
+
+    if node == target:
+      raise InvalidMove(_(u"a node may not be made a child of itself"))
+    elif tree_id == new_tree_id:
+      raise InvalidMove(_(u"a node may not be made a child of any of its descendants"))
+
+    gap_target, depth_change, left_right_change, parent_id, right_shift = \
+      self._calculate_inter_tree_move_values(node, target, position)
+
+    # Create space for the tree which will be inserted
+    self._manage_position_gap(connection, new_tree_id, gap_target, right_shift)
+
+    # Move the root node, making it a child node
+    connection.execute(
+      options.table.update()
+      .values({
+        options.parent_id_field: sqlalchemy.case(
+          [(options.pk_field == getattr(node, options.pk_field.name), parent_id)],
+          else_ = options.parent_id_field),
+        options.tree_id_field:   new_tree_id,
+        options.left_field:      options.left_field  + left_right_change,
+        options.right_field:     options.right_field + left_right_change,
+        options.depth_field:     options.depth_field + depth_change,
+      })
+      .where(
+        (options.tree_id_field == tree_id) &
+        (options.left_field    >= left)    &
+        (options.left_field    <= right)
+      ))
+
+    # Remove the gap previously occupied by the tree
+    self._manage_tree_gap(connection, tree_id - 1, -1)
+
+    # Closing the tree id gap might have affected the new tree id. We detect
+    # this so we don't end up with an inconsistent structure later:
+    if new_tree_id >= tree_id:
+      new_tree_id -= 1
+
+    # Update the former root node to be consistent with the updated
+    # tree in the database.
+    setattr(node, options.parent_id_field.name, parent_id)
+    setattr(node, options.tree_id_field.name,   new_tree_id)
+    setattr(node, options.left_field.name,      left  + left_right_change)
+    setattr(node, options.right_field.name,     right + left_right_change)
+    setattr(node, options.depth_field.name,     depth + depth_change)
+
 # ===----------------------------------------------------------------------===
 
 class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):

@@ -215,7 +215,11 @@ class TreeOptions(object):
         self.tree_id_field,
         self.left_field,
         self.right_field,
-        unique=True
+        # NOTE: Originally there was a constraint that tree_id, left, and
+        #       right be unique, simply as a sanity check. However on some
+        #       database backends that don't properly support atomic queries
+        #       this is causing an IntegrityError during tree operations.
+        #unique=True
       ),
     ]
     map(table.append_constraint, self.indices)
