@@ -954,7 +954,7 @@ class ReparantingTestCase(NamedTestCase):
       'children': [],
       'descendants': []}),
   ]
-  def test_new_root_from_subtree__platformer(self):
+  def test_child_into_root__platformer(self):
     name = u"platformer"
     result = [
       (u"action",               {'id':1, 'left':1,  'right':8,  'depth':0}, [
@@ -977,7 +977,7 @@ class ReparantingTestCase(NamedTestCase):
     node.parent = None
     db.session.commit()
     self.assertEqual(get_tree_details(), result)
-  def test_new_root_from_subtree__platformer_2d(self):
+  def test_child_into_root__platformer_2d(self):
     name = u"platformer_2d"
     result = [
       (u"action",               {'id':1, 'left':1,  'right':14, 'depth':0}, [
@@ -1000,7 +1000,7 @@ class ReparantingTestCase(NamedTestCase):
     node.parent = None
     db.session.commit()
     self.assertEqual(get_tree_details(), result)
-  def test_new_root_from_subtree__platformer_3d(self):
+  def test_child_into_root__platformer_3d(self):
     name = u"platformer_3d"
     result = [
       (u"action",               {'id':1, 'left':1,  'right':14, 'depth':0}, [
@@ -1023,7 +1023,7 @@ class ReparantingTestCase(NamedTestCase):
     node.parent = None
     db.session.commit()
     self.assertEqual(get_tree_details(), result)
-  def test_new_root_from_subtree__platformer_4d(self):
+  def test_child_into_root__platformer_4d(self):
     name = u"platformer_4d"
     result = [
       (u"action",               {'id':1, 'left':1,  'right':14, 'depth':0}, [
@@ -1046,7 +1046,7 @@ class ReparantingTestCase(NamedTestCase):
     node.parent = None
     db.session.commit()
     self.assertEqual(get_tree_details(), result)
-  def test_new_root_from_subtree__shmup(self):
+  def test_child_into_root__shmup(self):
     name = u"shmup"
     result = [
       (u"action",               {'id':1, 'left':1,  'right':10, 'depth':0}, [
@@ -1069,7 +1069,7 @@ class ReparantingTestCase(NamedTestCase):
     node.parent = None
     db.session.commit()
     self.assertEqual(get_tree_details(), result)
-  def test_new_root_from_subtree__shmup_vertical(self):
+  def test_child_into_root__shmup_vertical(self):
     name = u"shmup_vertical"
     result = [
       (u"action",               {'id':1, 'left':1,  'right':14, 'depth':0}, [
@@ -1092,7 +1092,7 @@ class ReparantingTestCase(NamedTestCase):
     node.parent = None
     db.session.commit()
     self.assertEqual(get_tree_details(), result)
-  def test_new_root_from_subtree__shmup_horizontal(self):
+  def test_child_into_root__shmup_horizontal(self):
     name = u"shmup_horizontal"
     result = [
       (u"action",               {'id':1, 'left':1,  'right':14, 'depth':0}, [
@@ -1115,7 +1115,7 @@ class ReparantingTestCase(NamedTestCase):
     node.parent = None
     db.session.commit()
     self.assertEqual(get_tree_details(), result)
-  def test_new_root_from_subtree__arpg(self):
+  def test_child_into_root__arpg(self):
     name = u"arpg"
     result = [
       (u"action",               {'id':1, 'left':1,  'right':16, 'depth':0}, [
@@ -1138,7 +1138,7 @@ class ReparantingTestCase(NamedTestCase):
     node.parent = None
     db.session.commit()
     self.assertEqual(get_tree_details(), result)
-  def test_new_root_from_subtree__trpg(self):
+  def test_child_into_root__trpg(self):
     name = u"trpg"
     result = [
       (u"action",               {'id':1, 'left':1,  'right':16, 'depth':0}, [
