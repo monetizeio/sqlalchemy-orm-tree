@@ -480,7 +480,7 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
       parent_id = getattr(target, options.parent_id_field.name)
 
     else:
-      raise InvalidMoveError(_(u"an invalid position was given: %s") % position)
+      raise ValueError(_(u"an invalid position was given: %s") % position)
 
     left_right_change = gap_target - node_left + 1
 
@@ -577,7 +577,7 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
         gap_target  = target_tree_id
         new_tree_id = target_tree_id + 1
       else:
-        raise InvalidMoveError(_(u"an invalid position was given: %s") % position)
+        raise ValueError(_(u"an invalid position was given: %s") % position)
 
       self._manage_tree_gap(connection, gap_target, 1)
 
@@ -613,7 +613,7 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
           lower_bound, upper_bound = new_tree_id, tree_id
           shift = 1
       else:
-        raise InvalidMoveError(_(u"an invalid position was given: %s") % position)
+        raise ValueError(_(u"an invalid position was given: %s") % position)
 
       connection.execute(
         options.table.update()
