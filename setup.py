@@ -72,7 +72,7 @@ setup(name='SQLAlchemy-ORM-tree',
   packages=packages,
   package_data={'sqlalchemy_tree': data_files},
   classifiers=[
-    'Development Status :: 2 - Pre-Alpha',
+    'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
     'License :: OSI Approved :: BSD License',
     'Operating System :: OS Independent',
