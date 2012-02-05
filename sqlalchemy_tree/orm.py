@@ -506,7 +506,6 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
     right = getattr(node, options.right_field.name)
     depth = getattr(node, options.depth_field.name)
     gap_size = right - left + 1
-    gap_target_left  = left - 1
 
     connection.execute(
       options.table.update()
@@ -518,24 +517,24 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
             [((options.left_field >= left) & (options.left_field <= right), new_tree_id)],
             else_ = options.tree_id_field),
           options.left_field:      sqlalchemy.case(
-            [((options.left_field >= left) & (options.left_field <= right), options.left_field - left_right_change),
-             ((options.left_field > gap_target_left),                       options.left_field - gap_size)],
+            [((options.left_field >= left) & (options.left_field <= right), options.left_field + left_right_change),
+             ((options.left_field >  right),                                options.left_field - gap_size)],
             else_ = options.left_field),
           options.right_field:     sqlalchemy.case(
-            [((options.right_field >= left) & (options.right_field <= right), options.right_field - left_right_change),
-             ((options.right_field > gap_target_left),                        options.right_field - gap_size)],
+            [((options.right_field >= left) & (options.right_field <= right), options.right_field + left_right_change),
+             ((options.right_field >  right),                                 options.right_field - gap_size)],
             else_ = options.right_field),
           options.depth_field:     sqlalchemy.case(
-            [((options.left_field >= left) & (options.left_field <= right), options.depth_field - depth_change)],
+            [((options.left_field >= left) & (options.left_field <= right), options.depth_field + depth_change)],
             else_ = options.depth_field),
         })
         .where(options.tree_id_field == getattr(node, options.tree_id_field.name)))
 
     setattr(node, options.parent_id_field.name, parent_id)
     setattr(node, options.tree_id_field.name,   new_tree_id)
-    setattr(node, options.left_field.name,      left - left_right_change)
-    setattr(node, options.right_field.name,     right - left_right_change)
-    setattr(node, options.depth_field.name,     depth - depth_change)
+    setattr(node, options.left_field.name,      left  + left_right_change)
+    setattr(node, options.right_field.name,     right + left_right_change)
+    setattr(node, options.depth_field.name,     depth + depth_change)
 
   def _make_child_into_root_node(self, connection, node, new_tree_id=None):
     """Removes ``node`` from its tree, making it the root node of a new tree.
@@ -548,10 +547,11 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
     left  = getattr(node, options.left_field.name)
     right = getattr(node, options.right_field.name)
     depth = getattr(node, options.depth_field.name)
-    left_right_change = left - 1
+    left_right_change = 1 - left
+    depth_change = -depth
 
     self._inter_tree_move_and_close_gap(connection, node, new_tree_id,
-                                        left_right_change, depth)
+                                        left_right_change, depth_change)
 
   def _make_sibling_of_root_node(self, connection, node, target, position):
     """Moves ``node``, making it a sibling of the given ``target`` root node
@@ -683,6 +683,138 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
     setattr(node, options.tree_id_field.name,   new_tree_id)
     setattr(node, options.left_field.name,      left  + left_right_change)
     setattr(node, options.right_field.name,     right + left_right_change)
+    setattr(node, options.depth_field.name,     depth + depth_change)
+
+  def _move_child_node(self, connection, node, target, position):
+    """Calls the appropriate method to move child node ``node`` relative to
+    the given ``target`` node as specified by ``position``."""
+    options = self._tree_options
+
+    tree_id     = getattr(node,   options.tree_id_field.name)
+    new_tree_id = getattr(target, options.tree_id_field.name)
+
+    if tree_id == new_tree_id:
+      self._move_child_within_tree(connection, node, target, position)
+    else:
+      self._move_child_to_new_tree(connection, node, target, position)
+
+  def _move_child_to_new_tree(self, connection, node, target, position):
+    """Moves child node ``node`` to a different tree, inserting it relative to
+    the given ``target`` node in the new tree as specified by ``position``."""
+    options = self._tree_options
+
+    left        = getattr(node,   options.left_field.name)
+    right       = getattr(node,   options.right_field.name)
+    depth       = getattr(node,   options.depth_field.name)
+    new_tree_id = getattr(target, options.tree_id_field.name)
+    width       = right - left + 1
+
+    gap_target, depth_change, left_right_change, parent_id, right_shift = \
+      self._calculate_inter_tree_move_values(node, target, position)
+
+    # Make space for the subtree which will be moved
+    self._manage_position_gap(connection, new_tree_id, gap_target, width)
+
+    # Move the subtree
+    self._inter_tree_move_and_close_gap(connection, node, new_tree_id,
+      left_right_change, depth_change, parent_id)
+
+  def _move_child_within_tree(self, connection, node, target, position):
+    """Moves child node ``node`` within its current tree relative to the given
+    ``target`` node as specified by ``position``."""
+    options = self._tree_options
+
+    left         = getattr(node,   options.left_field.name)
+    right        = getattr(node,   options.right_field.name)
+    depth        = getattr(node,   options.depth_field.name)
+    width        = right - left + 1
+    tree_id      = getattr(node,   options.tree_id_field.name)
+    target_left  = getattr(target, options.left_field.name)
+    target_right = getattr(target, options.right_field.name)
+    target_depth = getattr(target, options.depth_field.name)
+
+    if position in [options.class_manager.POSITION_FIRST_CHILD,
+                    options.class_manager.POSITION_LAST_CHILD]:
+      if node == target:
+        raise InvalidMoveError(_(u"a node may not be made a child of itself"))
+      elif left < target_left < right:
+        raise InvalidMoveError(_(u"a node may not be made a child of any of its descendants"))
+
+      if position == options.class_manager.POSITION_FIRST_CHILD:
+        if target_left > left:
+          new_left  = target_left - width + 1
+          new_right = target_left
+        else:
+          new_left  = target_left + 1
+          new_right = target_left + width
+      else:
+        if target_right > right:
+          new_left  = target_right - width
+          new_right = target_right - 1
+        else:
+          new_left  = target_right
+          new_right = target_right + width - 1
+      depth_change = target_depth - depth + 1
+      parent_id = getattr(target, options.pk_field.name)
+
+    elif position in [options.class_manager.POSITION_LEFT,
+                      options.class_manager.POSITION_RIGHT]:
+      if node == target:
+        raise InvalidMove(_(u"a node may not be made a sibling of itself"))
+      elif left < target_left < right:
+        raise InvalidMove(_(u"a node may not be made a sibling of any of its descendants"))
+
+      if position == options.class_manager.POSITION_LEFT:
+        if target_left > left:
+          new_left  = target_left - width
+          new_right = target_left - 1
+        else:
+          new_left  = target_left
+          new_right = target_left + width - 1
+      else:
+        if target_right > right:
+          new_left  = target_right - width + 1
+          new_right = target_right
+        else:
+          new_left  = target_right + 1
+          new_right = target_right + width
+      depth_change = target_depth - depth
+      parent_id = getattr(target, options.parent_id_field.name)
+
+    else:
+      raise ValueError(_(u"an invalid position was given: %s") % position)
+
+    left_boundary     = min(left,  new_left)
+    right_boundary    = max(right, new_right)
+    left_right_change = new_left - left
+    gap_size          = width
+    if left_right_change > 0:
+      gap_size = -gap_size
+
+    connection.execute(
+      options.table.update()
+      .values({
+        options.depth_field:     sqlalchemy.case(
+          [((options.left_field >= left) & (options.left_field <= right), options.depth_field + depth_change)],
+          else_ = options.depth_field),
+        options.left_field:      sqlalchemy.case(
+          [((options.left_field >= left)          & (options.left_field <= right),          options.left_field + left_right_change),
+           ((options.left_field >= left_boundary) & (options.left_field <= right_boundary), options.left_field + gap_size)],
+          else_ = options.left_field),
+        options.right_field:     sqlalchemy.case(
+          [((options.right_field >= left)          & (options.right_field <= right),          options.right_field + left_right_change),
+           ((options.right_field >= left_boundary) & (options.right_field <= right_boundary), options.right_field + gap_size)],
+          else_ = options.right_field),
+        options.parent_id_field: sqlalchemy.case(
+          [(options.pk_field == getattr(node, options.pk_field.name), parent_id)],
+          else_ = options.parent_id_field),
+      })
+      .where(options.tree_id_field == tree_id))
+
+    # Update the node object to be consistent database.
+    setattr(node, options.parent_id_field.name, parent_id)
+    setattr(node, options.left_field.name,      new_left)
+    setattr(node, options.right_field.name,     new_right)
     setattr(node, options.depth_field.name,     depth + depth_change)
 
 # ===----------------------------------------------------------------------===
