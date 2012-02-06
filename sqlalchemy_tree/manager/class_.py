@@ -129,27 +129,29 @@ class TreeClassManager(object):
     ""
     options = self._tree_options
 
-    sqlalchemy.event.listen(sqlalchemy.orm.session.Session,
-                            'before_flush',
-                            self.session_extension.before_flush)
-    sqlalchemy.event.listen(self.node_class,
-                            'before_insert',
-                            self.mapper_extension.before_insert)
-    sqlalchemy.event.listen(self.node_class,
-                            'after_insert',
-                            self.mapper_extension.after_insert)
-    sqlalchemy.event.listen(self.node_class,
-                            'before_delete',
-                            self.mapper_extension.before_delete)
-    sqlalchemy.event.listen(self.node_class,
-                            'after_delete',
-                            self.mapper_extension.after_delete)
-    sqlalchemy.event.listen(self.node_class,
-                            'before_update',
-                            self.mapper_extension.before_update)
-    sqlalchemy.event.listen(self.node_class,
-                            'after_update',
-                            self.mapper_extension.after_update)
+    if not getattr(options, '_event_listeners', False):
+      setattr(options, '_event_listeners', True)
+      sqlalchemy.event.listen(sqlalchemy.orm.session.Session,
+                              'before_flush',
+                              self.session_extension.before_flush)
+      sqlalchemy.event.listen(self.node_class,
+                              'before_insert',
+                              self.mapper_extension.before_insert)
+      sqlalchemy.event.listen(self.node_class,
+                              'after_insert',
+                              self.mapper_extension.after_insert)
+      sqlalchemy.event.listen(self.node_class,
+                              'before_delete',
+                              self.mapper_extension.before_delete)
+      sqlalchemy.event.listen(self.node_class,
+                              'after_delete',
+                              self.mapper_extension.after_delete)
+      sqlalchemy.event.listen(self.node_class,
+                              'before_update',
+                              self.mapper_extension.before_update)
+      sqlalchemy.event.listen(self.node_class,
+                              'after_update',
+                              self.mapper_extension.after_update)
 
   def filter_root_nodes(self):
     "Get a filter condition for all root nodes."
