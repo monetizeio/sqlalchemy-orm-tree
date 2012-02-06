@@ -62,6 +62,7 @@ for dirpath, dirnames, filenames in os.walk('sqlalchemy_tree'):
 setup(name='SQLAlchemy-ORM-tree',
   version=get_version().replace(' ', '-'),
   description='An implementation for SQLAlchemy-based applications of the nested-sets/modified-pre-order-tree-traversal technique for storing hierarchical data in a relational database.',
+  install_requires=['SQLAlchemy>=0.7'],
   author='RokuSigma Inc. and contributors',
   author_email='sqlalchemy-orm-tree@roku-sigma.com',
   maintainer='Mark Friedenbach',
