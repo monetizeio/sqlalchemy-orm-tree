@@ -840,6 +840,9 @@ class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
     options = self._tree_options
 
     for node in session.new.union(session.dirty):
+      if not isinstance(node, self._node_class):
+        continue
+
       if hasattr(node, options.delayed_op_attr):
         pass
 
