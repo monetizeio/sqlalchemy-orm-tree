@@ -249,7 +249,7 @@ class TreeOptions(object):
 
   def _get_parent_field_name(self):
     for prop in self.node_class._sa_class_manager.mapper.iterate_properties:
-      if (len(prop.local_side) == 1 and
+      if (len(getattr(prop, 'local_side', [])) == 1 and
           prop.local_side[0].name == self.parent_id_field.name):
         return prop.key
     # FIXME: We should raise an error or something--the tree extension will
