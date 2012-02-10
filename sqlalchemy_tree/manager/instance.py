@@ -143,34 +143,6 @@ class TreeInstanceManager(TreeClassManager):
     self._obj_ref      = weakref.ref(obj)
     self.class_manager = class_manager
 
-  @property
-  def pk_field(self):
-    return self._tree_options.pk_field
-
-  @property
-  def parent_id_field(self):
-    return self._tree_options.parent_id_field
-
-  @property
-  def parent_field_name(self):
-    return self._tree_options.parent_field_name
-
-  @property
-  def tree_id_field(self):
-    return self._tree_options.tree_id_field
-
-  @property
-  def left_field(self):
-    return self._tree_options.left_field
-
-  @property
-  def right_field(self):
-    return self._tree_options.right_field
-
-  @property
-  def depth_field(self):
-    return self._tree_options.depth_field
-
   def filter_parent(self):
     "Get a filter condition for a node's parent."
     options = self._tree_options

@@ -153,6 +153,34 @@ class TreeClassManager(object):
                               'after_update',
                               self.mapper_extension.after_update)
 
+  @property
+  def pk_field(self):
+    return self._tree_options.pk_field
+
+  @property
+  def parent_id_field(self):
+    return self._tree_options.parent_id_field
+
+  @property
+  def parent_field_name(self):
+    return self._tree_options.parent_field_name
+
+  @property
+  def tree_id_field(self):
+    return self._tree_options.tree_id_field
+
+  @property
+  def left_field(self):
+    return self._tree_options.left_field
+
+  @property
+  def right_field(self):
+    return self._tree_options.right_field
+
+  @property
+  def depth_field(self):
+    return self._tree_options.depth_field
+
   def filter_root_nodes(self):
     "Get a filter condition for all root nodes."
     options = self._tree_options
