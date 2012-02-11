@@ -913,9 +913,9 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
     connection.execute(
       options.table.update()
       .values({
-        options.depth_field:     sqlalchemy.case(
-          [((options.left_field >= left) & (options.left_field <= right), options.depth_field + depth_change)],
-          else_ = options.depth_field),
+        options.parent_id_field: sqlalchemy.case(
+          [(options.pk_field == getattr(node, options.pk_field.name), parent_id)],
+          else_ = options.parent_id_field),
         options.left_field:      sqlalchemy.case(
           [((options.left_field >= left)          & (options.left_field <= right),          options.left_field + left_right_change),
            ((options.left_field >= left_boundary) & (options.left_field <= right_boundary), options.left_field + gap_size)],
@@ -924,9 +924,9 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
           [((options.right_field >= left)          & (options.right_field <= right),          options.right_field + left_right_change),
            ((options.right_field >= left_boundary) & (options.right_field <= right_boundary), options.right_field + gap_size)],
           else_ = options.right_field),
-        options.parent_id_field: sqlalchemy.case(
-          [(options.pk_field == getattr(node, options.pk_field.name), parent_id)],
-          else_ = options.parent_id_field),
+        options.depth_field:     sqlalchemy.case(
+          [((options.left_field >= left) & (options.left_field <= right), options.depth_field + depth_change)],
+          else_ = options.depth_field),
       })
       .where(options.tree_id_field == tree_id))
     for obj in session_new:
