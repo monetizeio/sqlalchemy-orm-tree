@@ -116,7 +116,7 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
     self._tree_options = options
 
   def _reload_tree_parameters(self, connection, *args):
-    ""
+    "Forcibly loads tree parameters for passed in nodes from the database."
     options = self._tree_options
 
     for node in args:
