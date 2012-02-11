@@ -2294,5 +2294,24 @@ class ExplicitMoveTestCase(NamedTestCase):
     self._do_insert_and_check(result, node_name, target_name, position)
 
 # ===----------------------------------------------------------------------===
+
+class Regression__AddAllDifferentIds(TestCase):
+  def setUp(self):
+    self.maxDiff = None
+    db.metadata.drop_all()
+    db.metadata.create_all()
+    db.session = db.Session()
+  def tearDown(self):
+    db.session.close()
+  def test_add_all(self):
+    names = ['root', 'child1', 'child2', 'root2']
+    nodes = [Named(name=x) for x in names]
+    db.session.add_all(nodes)
+    db.session.flush()
+    self.assertEqual(
+      [(1, 1, 2), (2, 1, 2), (3, 1, 2), (4, 1, 2)],
+      sorted(map(lambda x:(x.tree_id, x.tree_left, x.tree_right), nodes)))
+
+# ===----------------------------------------------------------------------===
 # End of File
 # ===----------------------------------------------------------------------===

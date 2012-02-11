@@ -238,7 +238,30 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
 
   def after_insert(self, mapper, connection, node):
     "Just after a previously non-existent node is inserted into the tree."
-    pass
+    # FIXME: this method shouldn't exist. Because sqlalchemy calls all
+    #   before_insert events before performing any updates or insertions, it's
+    #   possible for inserts to "double-up". That's what we detect and back
+    #   out of here, but really we should find a way to prevent this from ever
+    #   happening.
+    options = self._tree_options
+
+    self._reload_tree_parameters(connection, node)
+
+    pk      = getattr(node, options.pk_field.name)
+    tree_id = getattr(node, options.tree_id_field.name)
+    left    = getattr(node, options.left_field.name)
+
+    count = connection.execute(sqlalchemy.select([options.pk_field])
+      .where((options.tree_id_field==tree_id) &
+             (options.left_field==left))
+      .count()
+    ).fetchone()[0]
+    if count > 1:
+      new_tree_id = self._get_next_tree_id(connection)
+      connection.execute(sqlalchemy.update(options.table)
+        .values({options.tree_id_field: new_tree_id})
+        .where(options.pk_field==pk))
+      setattr(node, options.tree_id_field.name, new_tree_id)
 
   def before_delete(self, mapper, connection, node):
     "Just prior to an existent node being deleted."
