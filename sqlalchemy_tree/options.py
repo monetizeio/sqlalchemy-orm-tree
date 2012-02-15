@@ -252,6 +252,10 @@ class TreeOptions(object):
       if (len(getattr(prop, 'local_side', [])) == 1 and
           prop.local_side[0].name == self.parent_id_field.name):
         return prop.key
+    for prop in self.node_class._sa_class_manager.mapper.iterate_properties:
+      if (getattr(prop, 'remote_side', None) is not None and
+          getattr(prop.remote_side, 'name', None) == self.pk_field.name):
+        return prop.key
     raise ValueError, \
       u"could not auto-detect parent field name; tree extension will not " \
       u"work property without a parent relationship defined"
