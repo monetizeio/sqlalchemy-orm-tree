@@ -115,6 +115,15 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
     # Save the options for future use.
     self._tree_options = options
 
+  def __clause_element__(self):
+    """Allows to use instances of ``TreeMapperExtension`` directly as argument
+    for ``sqlalchemy.orm.Query.order_by()`` to efficiently order a query into
+    preorder traversal ordering (sort by first ``tree_id`` and then ``left``
+    fields). It may seem odd to put this in the mapper extension, but it is so
+    that order-by behavior can be used prior to mapping, such as in the setup
+    of relationships."""
+    return self._tree_options.order_by_clause()
+
   def _reload_tree_parameters(self, connection, *args):
     "Forcibly loads tree parameters for passed in nodes from the database."
     options = self._tree_options
