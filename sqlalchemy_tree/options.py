@@ -252,9 +252,9 @@ class TreeOptions(object):
       if (len(getattr(prop, 'local_side', [])) == 1 and
           prop.local_side[0].name == self.parent_id_field.name):
         return prop.key
-    # FIXME: We should raise an error or something--the tree extension will
-    #        not work property without a parent relationship defined.
-    return None
+    raise ValueError, \
+      u"could not auto-detect parent field name; tree extension will not " \
+      u"work property without a parent relationship defined"
 
   def order_by_clause(self):
     """Get an object applicable for usage as an argument for
