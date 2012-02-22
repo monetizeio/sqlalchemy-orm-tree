@@ -37,7 +37,7 @@ import os
 
 from distutils.core import setup
 
-VERSION = (0,0,7, 'alpha', 0)
+VERSION = (0,0,8, 'alpha', 0)
 
 def get_version():
   version = '%s.%s' % (VERSION[0], VERSION[1])
