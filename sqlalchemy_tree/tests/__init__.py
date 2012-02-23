@@ -456,6 +456,12 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual([obj.name] + result['descendants'],
         map(lambda x:x.name,
             obj.tree.query_descendants(and_self=True).order_by(Named.tree).all()))
+  def get_descendant_count(self):
+    "Verify the number of descendants of each node against the expected count"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(len(result['descendants']), obj.tree.get_descendant_count())
 
 # ===----------------------------------------------------------------------===
 
