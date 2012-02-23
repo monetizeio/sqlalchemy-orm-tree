@@ -908,7 +908,8 @@ class ExplicitMoveTestCase(NamedTestCase):
       'parent': [],
       'ancestors': [],
       'children': ['platformer','shmup'],
-      'descendants': ['platformer','platformer_2d','platformer_3d','platformer_4d','shmup','shmup_vertical','shmup_horizontal']}),
+      'descendants': ['platformer','platformer_2d','platformer_3d',
+        'platformer_4d','shmup','shmup_vertical','shmup_horizontal']}),
     ('platformer', {
       'parent': ['action'],
       'ancestors': ['action'],
