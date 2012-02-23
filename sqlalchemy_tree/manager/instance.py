@@ -291,8 +291,7 @@ class TreeInstanceManager(TreeClassManager):
     :param and_self:
       `bool`, if set to `True` self node will be selected by query.
     :return:
-      a `sqlalchemy.orm.Query` object which contains only node's descendants
-      and is ordered by `path`.
+      a `sqlalchemy.orm.Query` object which contains only node's descendants.
     """
     # This simply builds on other methods to return a query with the
     # appropriate filter clause already applied:
