@@ -96,6 +96,9 @@
 # Python standard library unit tests
 from unittest2 import TestCase
 
+# Python standard library, combinatoric generators
+from itertools import permutations
+
 # SQLAlchemy object-relational mapper
 import sqlalchemy
 from sqlalchemy import *
@@ -561,6 +564,100 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(result['ancestors'] + [obj.name],
         map(lambda x:x.name,
             obj.tree.query_ancestors(and_self=True).order_by(Named.tree).all()))
+  def test_filter_ancestors_of_node(self):
+    "Verify the ancestors of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['ancestors'],
+        map(lambda x:x.name,
+          db.session.query(Named) \
+            .filter(Named.tree.filter_ancestors_of_node(obj)) \
+            .order_by(Named.tree).all()))
+      self.assertEqual(result['ancestors'] + [obj.name],
+        map(lambda x:x.name,
+          db.session.query(Named) \
+            .filter(Named.tree.filter_ancestors_of_node(obj, and_self=True)) \
+            .order_by(Named.tree).all()))
+    # permutations() is used instead of combinations() to ensure that the
+    # result is irrespective of the ordering of the nodes:
+    for results in permutations(self.result_static, 2):
+      names         = [x[0] for x in results]
+      nodes         = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      ancestors     = [set(x[1]['ancestors']) for x in results]
+      ancestors2    = map(lambda x:x[1].union(set([x[0]])), zip(names, ancestors))
+      union         = reduce(lambda l,r:l.union(r),        ancestors)
+      union2        = reduce(lambda l,r:l.union(r),        ancestors2)
+      intersection  = reduce(lambda l,r:l.intersection(r), ancestors)
+      intersection2 = reduce(lambda l,r:l.intersection(r), ancestors2)
+      self.assertEqual(union,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_ancestors_of_node(*nodes))
+            .all())))
+      self.assertEqual(union2,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_ancestors_of_node(*nodes, and_self=True))
+            .all())))
+      self.assertEqual(intersection,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_ancestors_of_node(*nodes, disjoint=False))
+            .all())))
+      self.assertEqual(intersection2,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_ancestors_of_node(*nodes, and_self=True, disjoint=False))
+            .all())))
+  def test_query_ancestors_of_node(self):
+    "Verify the ancestors of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['ancestors'],
+        map(lambda x:x.name,
+          Named.tree.query_ancestors_of_node(obj)
+            .order_by(Named.tree).all()))
+      self.assertEqual(result['ancestors'] + [obj.name],
+        map(lambda x:x.name,
+          Named.tree.query_ancestors_of_node(obj, and_self=True)
+            .order_by(Named.tree).all()))
+    # permutations() is used instead of combinations() to ensure that the
+    # result is irrespective of the ordering of the nodes:
+    for results in permutations(self.result_static, 2):
+      names         = [x[0] for x in results]
+      nodes         = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      ancestors     = [set(x[1]['ancestors']) for x in results]
+      ancestors2    = map(lambda x:x[1].union(set([x[0]])), zip(names, ancestors))
+      union         = reduce(lambda l,r:l.union(r),        ancestors)
+      union2        = reduce(lambda l,r:l.union(r),        ancestors2)
+      intersection  = reduce(lambda l,r:l.intersection(r), ancestors)
+      intersection2 = reduce(lambda l,r:l.intersection(r), ancestors2)
+      self.assertEqual(union,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_ancestors_of_node(*nodes)
+            .all())))
+      self.assertEqual(union2,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_ancestors_of_node(*nodes, and_self=True)
+            .all())))
+      self.assertEqual(intersection,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_ancestors_of_node(*nodes, disjoint=False)
+            .all())))
+      self.assertEqual(intersection2,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_ancestors_of_node(*nodes, and_self=True, disjoint=False)
+            .all())))
   def test_filter_children(self):
     "Verify the children of each node against expected values"
     for pattern in self.result_static:

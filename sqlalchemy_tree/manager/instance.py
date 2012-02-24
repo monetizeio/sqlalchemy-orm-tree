@@ -192,42 +192,11 @@ class TreeInstanceManager(TreeClassManager):
 
   def filter_ancestors(self, and_self=False):
     "The same as :meth:`filter_descendants` but filters ancestor nodes."
-    options = self._tree_options
-    obj     = self._get_obj()
-
-    #self._get_session_and_assert_flushed(obj)
-
-    # Restrict ourselves to just those nodes within the same tree:
-    tree_id = getattr(obj, self.tree_id_field.name)
-    filter_ = self.tree_id_field == tree_id
-
-    alias = sqlalchemy.alias(options.table)
-    left_field = self.left_field
-    filter_ &= sqlalchemy.between(
-      getattr(alias.c, self.left_field.name),
-      self.left_field, self.right_field)
-    filter_ &= getattr(alias.c, self.pk_field.name) == \
-               getattr(obj,     self.pk_field.name)
-
-    if not and_self:
-      filter_ &= self.pk_field != getattr(obj, self.pk_field.name)
-
-    # WHERE tree_id = <node.tree_id> AND <node.path> LIKE path || '%'
-    #filter_ = (self.tree_id_field == tree_id) \
-    #          & sqlalchemy.sql.expression.literal(
-    #                path, sqlalchemy.String
-    #            ).like(options.path_field + '%')
-    #if and_self:
-    #  filter_ &= self.depth_field  <= depth
-    #else:
-    #  filter_ &= self.depth_field < depth
-    return filter_
+    return self.filter_ancestors_of_node(self._get_obj(), and_self=and_self)
 
   def query_ancestors(self, session=None, and_self=False):
     "The same as :meth:`query_descendants` but queries node's ancestors."
-    query = self._get_query(self._get_obj(), session) \
-                .filter(self.filter_ancestors(and_self=and_self))
-    return query
+    return self.query_ancestors_of_node(self._get_obj(), session=session, and_self=and_self)
 
   def filter_children(self):
     """The same as :meth:`filter_descendants` but filters direct children only

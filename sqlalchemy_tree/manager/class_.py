@@ -255,6 +255,51 @@ class TreeClassManager(object):
     return session.query(self.node_class) \
                   .filter(self.filter_parent_of_node(*args, **kwargs))
 
+  def filter_ancestors_of_node(self, *args, **kwargs):
+    "Returns a filter condition for the ancestors of passed-in nodes."
+    options  = self._tree_options
+    and_self = kwargs.pop('and_self', False) # Include self in results
+    disjoint = kwargs.pop('disjoint', True)  # Logical-AND vs. -OR for reduction
+    for extra in kwargs:
+      raise TypeError, u"unexpected keyword argument '%s'" % extra
+
+    def _filter_ancestors_of_node_helper(node):
+      # Restrict ourselves to just those nodes within the same tree as node:
+      tree_id = getattr(node, self.tree_id_field.name)
+      filter_ = self.tree_id_field == tree_id
+
+      # Restrict to ancestors, inclusive of node:
+      alias = sqlalchemy.alias(options.table)
+      left_field = self.left_field
+      filter_ &= sqlalchemy.between(
+        getattr(alias.c, self.left_field.name),
+        self.left_field, self.right_field)
+      filter_ &= getattr(alias.c, self.pk_field.name) == \
+                 getattr(node,    self.pk_field.name)
+
+      # Explicitly exclude node, if requested:
+      if not and_self:
+        filter_ &= self.pk_field != getattr(node, self.pk_field.name)
+
+      # We're done!
+      return filter_
+
+    # Combine SQL expression clauses with logical-OR, extracting a SQL
+    # expression clause identifying ancestors of each node in turn:
+    filters = map(_filter_ancestors_of_node_helper, args)
+    if disjoint:
+      return reduce(lambda l,r: l | r, filters, sqlalchemy.sql.expression.false())
+    else:
+      return reduce(lambda l,r: l & r, filters, sqlalchemy.sql.expression.true())
+
+  def query_ancestors_of_node(self, *args, **kwargs):
+    "Returns a query containing the ancestors of passed-in nodes."
+    session = kwargs.pop('session', None)
+    if session is None:
+      session = self._get_session_from_args_or_self(*args)
+    return session.query(self.node_class) \
+                  .filter(self.filter_ancestors_of_node(*args, **kwargs))
+
   # Constants used to specify a desired position relative to another node, for
   # use in moving and insertion methods that take a target parameter.
   POSITION_LEFT        = 'left'
