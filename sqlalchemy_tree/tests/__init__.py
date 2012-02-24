@@ -93,7 +93,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # ===----------------------------------------------------------------------===
 
-# Python standard library unit tests
+# Python standard library, unit testing
 from unittest2 import TestCase
 
 # Python standard library, combinatoric generators
