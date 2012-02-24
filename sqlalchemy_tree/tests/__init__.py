@@ -328,10 +328,10 @@ class NamedTestCase(TreeTestMixin, TestCase):
   def test_named_hasattr_tree_depth(self):
     "‘named’ table has extra column ‘tree_depth’"
     self.assertTrue(hasattr(Named, 'tree_depth'))
-  def test_named_mp_yields_class_manager(self):
+  def test_named_tree_yields_class_manager(self):
     "Named.tree returns an TreeClassManager"
     self.assertTrue(isinstance(Named.tree, TreeClassManager))
-  def test_named_mp_yields_instance_manager(self):
+  def test_named_tree_yields_instance_manager(self):
     "Named().tree returns an TreeClassManager"
     self.assertTrue(isinstance(Named().tree, TreeInstanceManager))
   def test_pk_field(self):
