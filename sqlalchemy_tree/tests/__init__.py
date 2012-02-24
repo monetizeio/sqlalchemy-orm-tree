@@ -676,6 +676,50 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(result['children'],
         map(lambda x:x.name,
             obj.tree.query_children().order_by(Named.tree).all()))
+  def test_filter_children_of_node(self):
+    "Verify the children of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['children'],
+        map(lambda x:x.name,
+          db.session.query(Named) \
+            .filter(Named.tree.filter_children_of_node(obj)) \
+            .order_by(Named.tree).all()))
+    # permutations() is used instead of combinations() to ensure that the
+    # result is irrespective of the ordering of the nodes:
+    for results in permutations(self.result_static, 2):
+      names    = [x[0] for x in results]
+      nodes    = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      children = [set(x[1]['children']) for x in results]
+      union    = reduce(lambda l,r:l.union(r),        children)
+      self.assertEqual(union,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_children_of_node(*nodes))
+            .all())))
+  def test_query_children_of_node(self):
+    "Verify the children of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['children'],
+        map(lambda x:x.name,
+          Named.tree.query_children_of_node(obj)
+            .order_by(Named.tree).all()))
+    # permutations() is used instead of combinations() to ensure that the
+    # result is irrespective of the ordering of the nodes:
+    for results in permutations(self.result_static, 2):
+      names    = [x[0] for x in results]
+      nodes    = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      children = [set(x[1]['children']) for x in results]
+      union    = reduce(lambda l,r:l.union(r),        children)
+      self.assertEqual(union,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_children_of_node(*nodes)
+            .all())))
   def test_filter_descendants(self):
     "Verify the descendants of each node against expected values"
     for pattern in self.result_static:

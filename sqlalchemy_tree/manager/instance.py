@@ -201,36 +201,12 @@ class TreeInstanceManager(TreeClassManager):
   def filter_children(self):
     """The same as :meth:`filter_descendants` but filters direct children only
     and does not accept an :attr:`and_self` parameter."""
-    options = self._tree_options
-    obj     = self._get_obj()
-
-    # We don't actually need the session object, but we need to make sure the
-    # object is bound and that its tree fields are all filled out, which this
-    # method checks for:
-    #self._get_session_and_assert_flushed(obj)
-
-    # Since we store the denormalized depth field, this query is pretty easy.
-    # Just ask for those descendants with the correct depth value.
-    depth = getattr(obj, self.depth_field.name) + 1
-
-    # Oh yeah, using adjacency relation may be more efficient here. But one
-    # can access AL-based children collection without this library at all. And
-    # in this case we can be sure that at least the `(tree_id, left, right)`
-    # index is used. `parent_id` field may not have index set up so condition
-    # `pk == parent_id` in a SQL query could be even less efficient.
-    filter_ = self.filter_descendants() & (self.depth_field == depth)
-
-    # We're done!
-    return filter_
+    return self.filter_children_of_node(self._get_obj())
 
   def query_children(self, session=None):
     """The same as :meth:`query_descendants` but queries direct children only
     and does not accept an :attr:`and_self` parameter."""
-    # This simply builds on other methods to return a query with the
-    # appropriate filter clause already applied:
-    query = self._get_query(self._get_obj(), session) \
-                .filter(self.filter_children())
-    return query
+    return self.query_children_of_node(self._get_obj(), session=session)
 
   def filter_descendants(self, and_self=False):
     """Get a filter condition for node's descendants.

@@ -300,6 +300,36 @@ class TreeClassManager(object):
     return session.query(self.node_class) \
                   .filter(self.filter_ancestors_of_node(*args, **kwargs))
 
+  def filter_children_of_node(self, *args):
+    "Returns a filter condition for the children of passed-in nodes."
+    def _filter_children_of_node_helper(node):
+      # Since we store the denormalized depth field, this query is pretty
+      # easy: just ask for those descendants with the correct depth value.
+      depth = getattr(node, self.depth_field.name) + 1
+
+      # Oh yeah, using adjacency relation may be more efficient here. But one
+      # can access AL-based children collection without this library at all.
+      # And in this case we can be sure that at least the `(tree_id, left,
+      # right)` index is used. `parent_id` field may not have index set up so
+      # condition `pk == parent_id` in a SQL query could be even less
+      # efficient.
+      return self.filter_descendants_of_node(node) & (self.depth_field == depth)
+
+    # Combine SQL expression clauses with logical-OR, extracting a SQL
+    # expression clause identifying children of each node in turn:
+    return reduce(
+      lambda l,r: l | r,
+      map(_filter_children_of_node_helper, args),
+      sqlalchemy.sql.expression.false())
+
+  def query_children_of_node(self, *args, **kwargs):
+    "Returns a query containing the children of passed-in nodes."
+    session = kwargs.pop('session', None)
+    if session is None:
+      session = self._get_session_from_args_or_self(*args)
+    return session.query(self.node_class) \
+                  .filter(self.filter_children_of_node(*args, **kwargs))
+
   # Constants used to specify a desired position relative to another node, for
   # use in moving and insertion methods that take a target parameter.
   POSITION_LEFT        = 'left'
