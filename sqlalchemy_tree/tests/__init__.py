@@ -97,10 +97,12 @@
 from unittest2 import TestCase
 
 # SQLAlchemy object-relational mapper
+import sqlalchemy
 from sqlalchemy import *
 from sqlalchemy.orm import mapper, relationship, backref, sessionmaker
 
 # SQLAlchemy tree extension
+import sqlalchemy_tree
 from sqlalchemy_tree import *
 
 # ===----------------------------------------------------------------------===
@@ -332,6 +334,68 @@ class NamedTestCase(TreeTestMixin, TestCase):
   def test_named_mp_yields_instance_manager(self):
     "Named().tree returns an TreeClassManager"
     self.assertTrue(isinstance(Named().tree, TreeInstanceManager))
+  def test_pk_field(self):
+    "Named.tree.pk_field returns ‘id’ column."
+    # Class manager:
+    self.assertIsInstance(Named.tree.pk_field, sqlalchemy.schema.Column)
+    self.assertEqual(Named.tree.pk_field.name, 'id')
+    # Instance manager:
+    self.assertIsInstance(Named().tree.pk_field, sqlalchemy.schema.Column)
+    self.assertEqual(Named().tree.pk_field.name, 'id')
+  def test_parent_id_field(self):
+    "Named.tree.parent_id_field returns ‘parent_id’ column."
+    # Class manager:
+    self.assertIsInstance(Named.tree.parent_id_field, sqlalchemy.schema.Column)
+    self.assertEqual(Named.tree.parent_id_field.name, 'parent_id')
+    # Instance manager:
+    self.assertIsInstance(Named().tree.parent_id_field, sqlalchemy.schema.Column)
+    self.assertEqual(Named().tree.parent_id_field.name, 'parent_id')
+  def test_parent_field_name(self):
+    "Named.tree.parent_field_name returns name of ‘parent’ relationship."
+    # Class manager:
+    self.assertEqual(Named.tree.parent_field_name, 'parent')
+    # Instance manager:
+    self.assertEqual(Named().tree.parent_field_name, 'parent')
+  def test_tree_id_field(self):
+    "Named().tree.tree_id_field returns ‘tree_id’ column."
+    # Class manager:
+    self.assertIsInstance(Named.tree.tree_id_field,      sqlalchemy.schema.Column)
+    self.assertIsInstance(Named.tree.tree_id_field.type, sqlalchemy_tree.types.TreeIdType)
+    self.assertEqual(Named.tree.tree_id_field.name,      'tree_id')
+    # Instance manager:
+    self.assertIsInstance(Named().tree.tree_id_field,      sqlalchemy.schema.Column)
+    self.assertIsInstance(Named().tree.tree_id_field.type, sqlalchemy_tree.types.TreeIdType)
+    self.assertEqual(Named().tree.tree_id_field.name,      'tree_id')
+  def test_left_field(self):
+    "Named().tree.left_field returns ‘tree_left’ column."
+    # Class manager:
+    self.assertIsInstance(Named.tree.left_field,      sqlalchemy.schema.Column)
+    self.assertIsInstance(Named.tree.left_field.type, sqlalchemy_tree.types.TreeLeftType)
+    self.assertEqual(Named.tree.left_field.name,      'tree_left')
+    # Instance manager:
+    self.assertIsInstance(Named().tree.left_field,      sqlalchemy.schema.Column)
+    self.assertIsInstance(Named().tree.left_field.type, sqlalchemy_tree.types.TreeLeftType)
+    self.assertEqual(Named().tree.left_field.name,      'tree_left')
+  def test_right_field(self):
+    "Named().tree.right_field returns ‘tree_right’ column."
+    # Class manager:
+    self.assertIsInstance(Named.tree.right_field,      sqlalchemy.schema.Column)
+    self.assertIsInstance(Named.tree.right_field.type, sqlalchemy_tree.types.TreeRightType)
+    self.assertEqual(Named.tree.right_field.name,      'tree_right')
+    # Instance manager:
+    self.assertIsInstance(Named().tree.right_field,      sqlalchemy.schema.Column)
+    self.assertIsInstance(Named().tree.right_field.type, sqlalchemy_tree.types.TreeRightType)
+    self.assertEqual(Named().tree.right_field.name,      'tree_right')
+  def test_depth_field(self):
+    "Named().tree.depth_field returns ‘tree_depth’ column."
+    # Class manager:
+    self.assertIsInstance(Named.tree.depth_field,      sqlalchemy.schema.Column)
+    self.assertIsInstance(Named.tree.depth_field.type, sqlalchemy_tree.types.TreeDepthType)
+    self.assertEqual(Named.tree.depth_field.name,      'tree_depth')
+    # Instance manager:
+    self.assertIsInstance(Named().tree.depth_field,      sqlalchemy.schema.Column)
+    self.assertIsInstance(Named().tree.depth_field.type, sqlalchemy_tree.types.TreeDepthType)
+    self.assertEqual(Named().tree.depth_field.name,      'tree_depth')
   def test_filter_root_nodes(self):
     "Verify the root nodes against the expected values"
     expected = sorted([x[0] for x in self.name_pattern])
