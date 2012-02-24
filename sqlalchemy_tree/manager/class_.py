@@ -275,13 +275,11 @@ class TreeClassManager(object):
     for node in args:
       session = sqlalchemy.orm.object_session(node)
       if session is not None:
-        break
+        return session
     # NOTE: ``self._get_obj`` only exists on instance managers--this
     #       fallback only works from an instance manager of a node
     #       associated with a session.
-    if session is None:
-      session = sqlalchemy.orm.object_session(self._get_obj())
-    return session
+    return sqlalchemy.orm.object_session(self._get_obj())
 
 # ===----------------------------------------------------------------------===
 # End of File
