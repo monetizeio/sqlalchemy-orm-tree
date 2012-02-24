@@ -183,11 +183,10 @@ class TreeClassManager(object):
 
   def filter_root_nodes(self):
     "Get a filter condition for all root nodes."
-    options = self._tree_options
     # We avoid using the adjacency-list parent field because that column may
     # or may not be indexed. The ``left`` field is always 1 on a root node,
     # and we know an index exists on that field.
-    return options.left_field == 1
+    return self.left_field == 1
 
   def query_root_nodes(self, session=None, *args, **kwargs):
     """Convenience method that gets a query for all root nodes using
@@ -204,9 +203,8 @@ class TreeClassManager(object):
   def filter_root_node_by_tree_id(self, *args):
     """Get a filter condition returning root nodes of the tree specified
     through the positional arguments (interpreted as tree ids)."""
-    options = self._tree_options
     return self.filter_root_nodes() & \
-           options.tree_id_field.in_(args)
+           self.tree_id_field.in_(args)
 
   def query_root_node_by_tree_id(self, *args, **kwargs):
     """Returns the root nodes of the trees specified through the positional
@@ -225,10 +223,9 @@ class TreeClassManager(object):
   def filter_root_node_of_node(self, *args):
     """Get a filter condition returning the root nodes of the trees which
     include the passed-in nodes."""
-    options = self._tree_options
     return self.filter_root_nodes() & \
-           options.tree_id_field.in_(
-             set(map(lambda n:getattr(n, options.tree_id_field.name), args)))
+           self.tree_id_field.in_(
+             set(map(lambda n:getattr(n, self.tree_id_field.name), args)))
 
   def query_root_node_of_node(self, *args, **kwargs):
     """Returns the root nodes of the trees which contain the passed in nodes,
