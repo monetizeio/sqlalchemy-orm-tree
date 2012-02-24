@@ -427,9 +427,9 @@ class NamedTestCase(TreeTestMixin, TestCase):
     "Verify the root nodes against the expected values"
     expected = sorted([x[0] for x in self.name_pattern])
     self.assertEqual(expected, [x.name for x in
-      db.session.query(Named) \
-                .filter(Named.tree.filter_root_node()) \
-                .order_by(Named.name) \
+      db.session.query(Named)
+                .filter(Named.tree.filter_root_node())
+                .order_by(Named.name)
                 .all()])
     for node in db.session.query(Named).all():
       root = db.session.query(Named) \
@@ -441,8 +441,8 @@ class NamedTestCase(TreeTestMixin, TestCase):
     "Verify the root nodes against the expected values"
     expected = sorted([x[0] for x in self.name_pattern])
     self.assertEqual(expected, [x.name for x in
-      Named.tree.query_root_node(session=db.session) \
-                .order_by(Named.name) \
+      Named.tree.query_root_node(session=db.session)
+                .order_by(Named.name)
                 .all()])
     for node in db.session.query(Named).all():
       root = node.tree.query_root_node().one()
@@ -459,8 +459,8 @@ class NamedTestCase(TreeTestMixin, TestCase):
     def _process_node(root_name, node_name, children):
       node = db.session.query(Named).filter_by(name=node_name).one()
       self.assertEqual(root_name,
-        db.session.query(Named) \
-                  .filter(Named.tree.filter_root_node_by_tree_id(node.tree_id)) \
+        db.session.query(Named)
+                  .filter(Named.tree.filter_root_node_by_tree_id(node.tree_id))
                   .one().name)
       for child_name, values, grandchildren in children:
         _process_node(root_name, child_name, grandchildren)
@@ -471,10 +471,10 @@ class NamedTestCase(TreeTestMixin, TestCase):
     def _process_node(root_name, node_name, children):
       node = db.session.query(Named).filter_by(name=node_name).one()
       self.assertEqual(root_name,
-        Named.tree.query_root_node_by_tree_id(node.tree_id, session=db.session) \
+        Named.tree.query_root_node_by_tree_id(node.tree_id, session=db.session)
                   .one().name)
       self.assertEqual(root_name,
-        node.tree.query_root_node_by_tree_id(node.tree_id) \
+        node.tree.query_root_node_by_tree_id(node.tree_id)
                  .one().name)
       for child_name, values, grandchildren in children:
         _process_node(root_name, child_name, grandchildren)
@@ -485,8 +485,8 @@ class NamedTestCase(TreeTestMixin, TestCase):
     def _process_node(root_name, node_name, children):
       node = db.session.query(Named).filter_by(name=node_name).one()
       self.assertEqual(root_name,
-        db.session.query(Named) \
-                  .filter(Named.tree.filter_root_node_of_node(node)) \
+        db.session.query(Named)
+                  .filter(Named.tree.filter_root_node_of_node(node))
                   .one().name)
       for child_name, values, grandchildren in children:
         _process_node(root_name, child_name, grandchildren)
@@ -497,10 +497,10 @@ class NamedTestCase(TreeTestMixin, TestCase):
     def _process_node(root_name, node_name, children):
       node = db.session.query(Named).filter_by(name=node_name).one()
       self.assertEqual(root_name,
-        Named.tree.query_root_node_of_node(node, session=db.session) \
+        Named.tree.query_root_node_of_node(node, session=db.session)
                   .one().name)
       self.assertEqual(root_name,
-        node.tree.query_root_node_of_node(node) \
+        node.tree.query_root_node_of_node(node)
                  .one().name)
       for child_name, values, grandchildren in children:
         _process_node(root_name, child_name, grandchildren)
@@ -538,32 +538,6 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(result['parent'],
         map(lambda x:x.name,
           db.session.query(Named).filter(obj.tree.filter_parent()).all()))
-  def test_filter_ancestors(self):
-    "Verify the ancestors of each node against expected values"
-    for pattern in self.result_static:
-      name, result = pattern
-      obj = db.session.query(Named).filter_by(name=name).one()
-      self.assertEqual(result['ancestors'],
-        map(lambda x:x.name,
-          db.session.query(Named) \
-            .filter(obj.tree.filter_ancestors()) \
-            .order_by(Named.tree).all()))
-      self.assertEqual(result['ancestors'] + [obj.name],
-        map(lambda x:x.name,
-          db.session.query(Named) \
-            .filter(obj.tree.filter_ancestors(and_self=True)) \
-            .order_by(Named.tree).all()))
-  def test_query_ancestors(self):
-    "Verify the ancestors of each node against expected values"
-    for pattern in self.result_static:
-      name, result = pattern
-      obj = db.session.query(Named).filter_by(name=name).one()
-      self.assertEqual(result['ancestors'],
-        map(lambda x:x.name,
-            obj.tree.query_ancestors().order_by(Named.tree).all()))
-      self.assertEqual(result['ancestors'] + [obj.name],
-        map(lambda x:x.name,
-            obj.tree.query_ancestors(and_self=True).order_by(Named.tree).all()))
   def test_filter_ancestors_of_node(self):
     "Verify the ancestors of each node against expected values"
     for pattern in self.result_static:
@@ -571,13 +545,13 @@ class NamedTestCase(TreeTestMixin, TestCase):
       obj = db.session.query(Named).filter_by(name=name).one()
       self.assertEqual(result['ancestors'],
         map(lambda x:x.name,
-          db.session.query(Named) \
-            .filter(Named.tree.filter_ancestors_of_node(obj)) \
+          db.session.query(Named)
+            .filter(Named.tree.filter_ancestors_of_node(obj))
             .order_by(Named.tree).all()))
       self.assertEqual(result['ancestors'] + [obj.name],
         map(lambda x:x.name,
-          db.session.query(Named) \
-            .filter(Named.tree.filter_ancestors_of_node(obj, and_self=True)) \
+          db.session.query(Named)
+            .filter(Named.tree.filter_ancestors_of_node(obj, and_self=True))
             .order_by(Named.tree).all()))
     # permutations() is used instead of combinations() to ensure that the
     # result is irrespective of the ordering of the nodes:
@@ -658,24 +632,32 @@ class NamedTestCase(TreeTestMixin, TestCase):
           lambda node:node.name,
           Named.tree.query_ancestors_of_node(*nodes, and_self=True, disjoint=False)
             .all())))
-  def test_filter_children(self):
-    "Verify the children of each node against expected values"
+  def test_filter_ancestors(self):
+    "Verify the ancestors of each node against expected values"
     for pattern in self.result_static:
       name, result = pattern
       obj = db.session.query(Named).filter_by(name=name).one()
-      self.assertEqual(result['children'],
+      self.assertEqual(result['ancestors'],
         map(lambda x:x.name,
-          db.session.query(Named) \
-            .filter(obj.tree.filter_children()) \
+          db.session.query(Named)
+            .filter(obj.tree.filter_ancestors())
             .order_by(Named.tree).all()))
-  def test_query_children(self):
-    "Verify the children of each node against expected values"
+      self.assertEqual(result['ancestors'] + [obj.name],
+        map(lambda x:x.name,
+          db.session.query(Named)
+            .filter(obj.tree.filter_ancestors(and_self=True))
+            .order_by(Named.tree).all()))
+  def test_query_ancestors(self):
+    "Verify the ancestors of each node against expected values"
     for pattern in self.result_static:
       name, result = pattern
       obj = db.session.query(Named).filter_by(name=name).one()
-      self.assertEqual(result['children'],
+      self.assertEqual(result['ancestors'],
         map(lambda x:x.name,
-            obj.tree.query_children().order_by(Named.tree).all()))
+            obj.tree.query_ancestors().order_by(Named.tree).all()))
+      self.assertEqual(result['ancestors'] + [obj.name],
+        map(lambda x:x.name,
+            obj.tree.query_ancestors(and_self=True).order_by(Named.tree).all()))
   def test_filter_children_of_node(self):
     "Verify the children of each node against expected values"
     for pattern in self.result_static:
@@ -683,8 +665,8 @@ class NamedTestCase(TreeTestMixin, TestCase):
       obj = db.session.query(Named).filter_by(name=name).one()
       self.assertEqual(result['children'],
         map(lambda x:x.name,
-          db.session.query(Named) \
-            .filter(Named.tree.filter_children_of_node(obj)) \
+          db.session.query(Named)
+            .filter(Named.tree.filter_children_of_node(obj))
             .order_by(Named.tree).all()))
     # permutations() is used instead of combinations() to ensure that the
     # result is irrespective of the ordering of the nodes:
@@ -720,6 +702,24 @@ class NamedTestCase(TreeTestMixin, TestCase):
           lambda node:node.name,
           Named.tree.query_children_of_node(*nodes)
             .all())))
+  def test_filter_children(self):
+    "Verify the children of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['children'],
+        map(lambda x:x.name,
+          db.session.query(Named)
+            .filter(obj.tree.filter_children())
+            .order_by(Named.tree).all()))
+  def test_query_children(self):
+    "Verify the children of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['children'],
+        map(lambda x:x.name,
+            obj.tree.query_children().order_by(Named.tree).all()))
   def test_filter_descendants(self):
     "Verify the descendants of each node against expected values"
     for pattern in self.result_static:
@@ -727,13 +727,13 @@ class NamedTestCase(TreeTestMixin, TestCase):
       obj = db.session.query(Named).filter_by(name=name).one()
       self.assertEqual(result['descendants'],
         map(lambda x:x.name,
-          db.session.query(Named) \
-            .filter(obj.tree.filter_descendants()) \
+          db.session.query(Named)
+            .filter(obj.tree.filter_descendants())
             .order_by(Named.tree).all()))
       self.assertEqual([obj.name] + result['descendants'],
         map(lambda x:x.name,
-          db.session.query(Named) \
-            .filter(obj.tree.filter_descendants(and_self=True)) \
+          db.session.query(Named)
+            .filter(obj.tree.filter_descendants(and_self=True))
             .order_by(Named.tree).all()))
   def test_query_descendants(self):
     "Verify the descendants of each node against expected values"
