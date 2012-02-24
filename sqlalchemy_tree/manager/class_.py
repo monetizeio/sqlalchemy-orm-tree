@@ -228,7 +228,7 @@ class TreeClassManager(object):
     options = self._tree_options
     return self.filter_root_nodes() & \
            options.tree_id_field.in_(
-             map(lambda n:getattr(n, options.tree_id_field.name), args))
+             set(map(lambda n:getattr(n, options.tree_id_field.name), args)))
 
   def query_root_node_of_node(self, *args, **kwargs):
     """Returns the root nodes of the trees which contain the passed in nodes,
