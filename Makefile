@@ -58,6 +58,34 @@ check: ${PKG_ROOT}/.stamp-h
 	${PKG_ROOT}/bin/coverage xml --omit=".pytest.py" -o build/report/coverage.xml
 	rm -f .pytest.py
 
+.PHONY: debugcheck
+debugcheck: ${PKG_ROOT}/.stamp-h
+	mkdir -p build/report/xunit
+	@echo  >.pytest.py "import unittest2"
+	@echo >>.pytest.py "import xmlrunner"
+	@echo >>.pytest.py "import exceptions, ipdb, sys"
+	@echo >>.pytest.py "class PDBAssertionError(exceptions.AssertionError):"
+	@echo >>.pytest.py "  def __init__(self, *args):"
+	@echo >>.pytest.py "    exceptions.AssertionError.__init__(self, *args)"
+	@echo >>.pytest.py "    print 'Assertion failed, entering PDB...'"
+	@echo >>.pytest.py "    if hasattr(sys, '_getframe'):"
+	@echo >>.pytest.py "      ipdb.set_trace(sys._getframe().f_back.f_back.f_back)"
+	@echo >>.pytest.py "    else:"
+	@echo >>.pytest.py "      ipdb.set_trace()"
+	@echo >>.pytest.py "unittest2.TestCase.failureException = PDBAssertionError"
+	@echo >>.pytest.py "unittest2.main("
+	@echo >>.pytest.py "  testRunner=xmlrunner.XMLTestRunner(output='build/report/xunit'),"
+	@echo >>.pytest.py "  argv=['unit2', 'discover',"
+	@echo >>.pytest.py "    '-s','sqlalchemy_tree',"
+	@echo >>.pytest.py "    '-p','*.py',"
+	@echo >>.pytest.py "    '-t','.',"
+	@echo >>.pytest.py "  ]"
+	@echo >>.pytest.py ")"
+	@chmod +x .pytest.py
+	${PKG_ROOT}/bin/coverage run .pytest.py || { rm -f .pytest.py; exit 1; }
+	${PKG_ROOT}/bin/coverage xml --omit=".pytest.py" -o build/report/coverage.xml
+	rm -f .pytest.py
+
 .PHONY: shell
 shell: ${PKG_ROOT}/.stamp-h
 	${PKG_ROOT}/bin/ipython

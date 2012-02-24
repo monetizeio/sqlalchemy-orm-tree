@@ -1,2 +1,3 @@
+ipdb==0.6.1
 ipython==0.12
 readline>=6.2.1
