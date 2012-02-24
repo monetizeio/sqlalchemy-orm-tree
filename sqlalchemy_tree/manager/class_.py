@@ -238,16 +238,7 @@ class TreeClassManager(object):
     associated with the instance manager's node."""
     session = kwargs.pop('session', None)
     if session is None:
-      # Try retrieving the session from one of our positional parameters:
-      for node in args:
-        session = sqlalchemy.orm.object_session(node)
-        if session is not None:
-          break
-      # NOTE: ``self._get_obj`` only exists on instance managers--this
-      #       fallback only works from an instance manager of a node
-      #       associated with a session.
-      if session is None:
-        session = sqlalchemy.orm.object_session(self._get_obj())
+      session = self._get_session_from_args_or_self(*args)
     return session.query(self.node_class) \
                   .filter(self.filter_root_node_of_node(*args, **kwargs))
 
@@ -265,6 +256,19 @@ class TreeClassManager(object):
     setattr(node, options.delayed_op_attr, (target, position))
 
     setattr(node, options.tree_id_field.name, 0)
+
+  def _get_session_from_args_or_self(self, *args):
+    # Try retrieving the session from one of our positional parameters:
+    for node in args:
+      session = sqlalchemy.orm.object_session(node)
+      if session is not None:
+        break
+    # NOTE: ``self._get_obj`` only exists on instance managers--this
+    #       fallback only works from an instance manager of a node
+    #       associated with a session.
+    if session is None:
+      session = sqlalchemy.orm.object_session(self._get_obj())
+    return session
 
 # ===----------------------------------------------------------------------===
 # End of File
