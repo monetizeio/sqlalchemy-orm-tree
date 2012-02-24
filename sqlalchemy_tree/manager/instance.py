@@ -171,6 +171,21 @@ class TreeInstanceManager(TreeClassManager):
   def depth(self):
     return getattr(self._get_obj(), self._tree_options.depth_field.name)
 
+  def filter_root_node(self):
+    """Return a filter condition identifying the root node of the tree which
+    includes this node."""
+    return self.filter_root_node_of_node(self._get_obj())
+
+  def query_root_node(self):
+    """Return a query containing the root node of the tree which includes this
+    node."""
+    return self.query_root_node_of_node(self._get_obj())
+
+  @property
+  def root_node(self):
+    "Return the root node of the tree which includes this node."
+    return self.query_root_node_of_node(self._get_obj()).one()
+
   def filter_parent(self):
     "Get a filter condition for a node's parent."
     return self.filter_parent_of_node(self._get_obj())

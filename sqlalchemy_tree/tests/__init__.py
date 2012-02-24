@@ -154,7 +154,7 @@ def get_tree_details():
   def _get_subtree(parent):
     if parent is None:
       children = db.session.query(Named) \
-                           .filter(Named.tree.filter_root_nodes()) \
+                           .filter(Named.tree.filter_root_node()) \
                            .order_by(options.tree_id_field) \
                            .all()
     else:
@@ -420,26 +420,37 @@ class NamedTestCase(TreeTestMixin, TestCase):
         _helper(*pattern)
     for pattern in self.name_pattern:
       _helper(*pattern)
-  def test_filter_root_nodes(self):
+  def test_filter_root_node(self):
     "Verify the root nodes against the expected values"
     expected = sorted([x[0] for x in self.name_pattern])
     self.assertEqual(expected, [x.name for x in
       db.session.query(Named) \
-                .filter(Named.tree.filter_root_nodes()) \
+                .filter(Named.tree.filter_root_node()) \
                 .order_by(Named.name) \
                 .all()])
-  def test_query_root_nodes(self):
+    for node in db.session.query(Named).all():
+      root = db.session.query(Named) \
+                       .filter(node.tree.filter_root_node()) \
+                       .one()
+      self.assertEqual(root.tree.depth,   0)
+      self.assertEqual(root.tree.tree_id, node.tree.tree_id)
+  def test_query_root_node(self):
     "Verify the root nodes against the expected values"
     expected = sorted([x[0] for x in self.name_pattern])
     self.assertEqual(expected, [x.name for x in
-      Named.tree.query_root_nodes(session=db.session) \
+      Named.tree.query_root_node(session=db.session) \
                 .order_by(Named.name) \
                 .all()])
-    node = db.session.query(Named).first()
-    self.assertEqual(expected, [x.name for x in
-      node.tree.query_root_nodes() \
-                .order_by(Named.name) \
-                .all()])
+    for node in db.session.query(Named).all():
+      root = node.tree.query_root_node().one()
+      self.assertEqual(root.tree.depth,   0)
+      self.assertEqual(root.tree.tree_id, node.tree.tree_id)
+  def test_root_node_property(self):
+    "Verify the root nodes against the expected values"
+    for node in db.session.query(Named).all():
+      root = node.tree.root_node
+      self.assertEqual(root.tree.depth,   0)
+      self.assertEqual(root.tree.tree_id, node.tree.tree_id)
   def test_filter_root_node_by_tree_id(self):
     "Verify root node from tree id against expected value"
     def _process_node(root_name, node_name, children):
@@ -461,6 +472,32 @@ class NamedTestCase(TreeTestMixin, TestCase):
                   .one().name)
       self.assertEqual(root_name,
         node.tree.query_root_node_by_tree_id(node.tree_id) \
+                 .one().name)
+      for child_name, values, grandchildren in children:
+        _process_node(root_name, child_name, grandchildren)
+    for root_name, values, children in self.name_pattern:
+      _process_node(root_name, root_name, children)
+  def test_filter_root_node_of_node(self):
+    "Verify root node from tree id against expected value"
+    def _process_node(root_name, node_name, children):
+      node = db.session.query(Named).filter_by(name=node_name).one()
+      self.assertEqual(root_name,
+        db.session.query(Named) \
+                  .filter(Named.tree.filter_root_node_of_node(node)) \
+                  .one().name)
+      for child_name, values, grandchildren in children:
+        _process_node(root_name, child_name, grandchildren)
+    for root_name, values, children in self.name_pattern:
+      _process_node(root_name, root_name, children)
+  def test_query_root_node_of_node(self):
+    "Verify root node from tree id against expected value"
+    def _process_node(root_name, node_name, children):
+      node = db.session.query(Named).filter_by(name=node_name).one()
+      self.assertEqual(root_name,
+        Named.tree.query_root_node_of_node(node, session=db.session) \
+                  .one().name)
+      self.assertEqual(root_name,
+        node.tree.query_root_node_of_node(node) \
                  .one().name)
       for child_name, values, grandchildren in children:
         _process_node(root_name, child_name, grandchildren)

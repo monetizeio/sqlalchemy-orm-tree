@@ -181,16 +181,16 @@ class TreeClassManager(object):
   def depth_field(self):
     return self._tree_options.depth_field
 
-  def filter_root_nodes(self):
+  def filter_root_node(self):
     "Get a filter condition for all root nodes."
     # We avoid using the adjacency-list parent field because that column may
     # or may not be indexed. The ``left`` field is always 1 on a root node,
     # and we know an index exists on that field.
     return self.left_field == 1
 
-  def query_root_nodes(self, session=None, *args, **kwargs):
+  def query_root_node(self, session=None, *args, **kwargs):
     """Convenience method that gets a query for all root nodes using
-    ``filter_root_nodes`` and the session associated with this node. The
+    ``filter_root_node`` and the session associated with this node. The
     session must be passed explicitly if called from a class manager."""
     if session is None:
       # NOTE: ``self._get_obj`` only exists on instance managers--session may
@@ -198,12 +198,12 @@ class TreeClassManager(object):
       #       associated with a session.
       session = sqlalchemy.orm.object_session(self._get_obj())
     return session.query(self.node_class) \
-                  .filter(self.filter_root_nodes(*args, **kwargs))
+                  .filter(TreeClassManager.filter_root_node(self, *args, **kwargs))
 
   def filter_root_node_by_tree_id(self, *args):
     """Get a filter condition returning root nodes of the tree specified
     through the positional arguments (interpreted as tree ids)."""
-    return self.filter_root_nodes() & \
+    return TreeClassManager.filter_root_node(self) & \
            self.tree_id_field.in_(args)
 
   def query_root_node_by_tree_id(self, *args, **kwargs):
@@ -223,7 +223,7 @@ class TreeClassManager(object):
   def filter_root_node_of_node(self, *args):
     """Get a filter condition returning the root nodes of the trees which
     include the passed-in nodes."""
-    return self.filter_root_nodes() & \
+    return TreeClassManager.filter_root_node(self) & \
            self.tree_id_field.in_(
              set(map(lambda n:getattr(n, self.tree_id_field.name), args)))
 
