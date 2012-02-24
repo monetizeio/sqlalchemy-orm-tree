@@ -373,6 +373,93 @@ class TreeClassManager(object):
     return session.query(self.node_class) \
                   .filter(self.filter_descendants_of_node(*args, **kwargs))
 
+  def filter_leaf_nodes(self):
+    "Creates a filter condition containing all leaf nodes."
+    return self.left_field == (self.right_field-1)
+
+  def query_leaf_nodes(self, session=None, *args, **kwargs):
+    "Returns a query containing all leaf nodes."
+    if session is None:
+      # NOTE: ``self._get_obj`` only exists on instance managers--session may
+      #       only be ``None`` if called from an instance manager of a node
+      #       associated with a session.
+      session = sqlalchemy.orm.object_session(self._get_obj())
+    return session.query(self.node_class) \
+                  .filter(self.filter_leaf_nodes(*args, **kwargs))
+
+  def filter_leaf_nodes_by_tree_id(self, *args):
+    """Creates a filter condition containing all leaf nodes of the tree(s)
+    specified through the positional arguments (interpreted as tree ids)."""
+    return self.filter_leaf_nodes() & \
+           self.tree_id_field.in_(args)
+
+  def query_leaf_nodes_by_tree_id(self, *args, **kwargs):
+    """Returns a query containing all leaf nodes of the tree(s) specified
+    through the positional arguments (interpreted as tree ids) using
+    ``filter_leaf_nodes_by_tree_id`` and the session associated with this
+    node. The session must be passed explicitly if called from a class
+    manager."""
+    session = kwargs.pop('session', None)
+    if session is None:
+      # NOTE: ``self._get_obj`` only exists on instance managers--session may
+      #       only be ``None`` if called from an instance manager of a node
+      #       associated with a session.
+      session = sqlalchemy.orm.object_session(self._get_obj())
+    return session.query(self.node_class) \
+                  .filter(self.filter_leaf_nodes_by_tree_id(*args, **kwargs))
+
+  def filter_leaf_nodes_of_node(self, *args, **kwargs):
+    """Get a filter condition returning the leaf nodes of the descendants of
+    the passed-in nodes."""
+    or_self  = kwargs.pop('or_self', False) # Include self in results
+    disjoint = kwargs.pop('disjoint', True) # Logical-AND vs. -OR for reduction
+    for extra in kwargs:
+      raise TypeError, u"unexpected keyword argument '%s'" % extra
+
+    def _filter_leaf_nodes_of_node_helper(node):
+      tree_id = getattr(node, self.tree_id_field.name)
+      left    = getattr(node, self.left_field.name)
+      right   = getattr(node, self.right_field.name) - 1
+
+      # If the caller requests the specified node to be included, this is most
+      # easily accomplished by not incrementing left by one, so that the node
+      # is now included in the resulting interval:
+      left = or_self and left or left + 1
+
+      # Restrict ourselves to just those nodes within the same tree:
+      filter_ = self.tree_id_field == tree_id
+
+      # Restrict ourselves to leaf nodes...
+      filter_ &= self.left_field == (self.right_field-1)
+
+      # ...which are descendants of this node (any node which has a left value
+      # between this node's left and right values must be a descendant of this
+      # node):
+      filter_ &= sqlalchemy.between(self.left_field, left, right)
+
+      # We're done!
+      return filter_
+
+    # Combine SQL expression clauses with logical-OR, extracting a SQL
+    # expression clause identifying leaf nodes under each node in turn:
+    filters = map(_filter_leaf_nodes_of_node_helper, args)
+    if disjoint:
+      return reduce(lambda l,r: l | r, filters, sqlalchemy.sql.expression.false())
+    else:
+      return reduce(lambda l,r: l & r, filters, sqlalchemy.sql.expression.true())
+
+  def query_leaf_nodes_of_node(self, *args, **kwargs):
+    """Returns the leaf nodes of the descendants of the passed-in nodes, using
+    ``filter_leaf_nodes_by_tree_id``. The session used to perform the
+    query is either a) the session explicitly passed in, b) the session
+    associated with the first bound positional parameter, or c) the session
+    associated with the instance manager's node."""
+    session = kwargs.pop('session', None)
+    if session is None:
+      session = self._get_session_from_args_or_self(*args)
+    return session.query(self.node_class) \
+                  .filter(self.filter_leaf_nodes_of_node(*args, **kwargs))
+
   # Constants used to specify a desired position relative to another node, for
   # use in moving and insertion methods that take a target parameter.
   POSITION_LEFT        = 'left'

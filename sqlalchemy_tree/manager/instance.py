@@ -264,6 +264,42 @@ class TreeInstanceManager(TreeClassManager):
 
     return (right - left - 1) / 2
 
+  def filter_leaf_nodes(self, or_self=False):
+    """Creates a filter containing leaf nodes of this node instance.
+
+    Requires that node has `tree_id`, `left`, `right` and `depth` values
+    available (that means it has “persistent version” even if the node itself
+    is in “detached” state or it is in “pending” state in `autoflush`-enabled
+    session).
+
+    :param or_self:
+      `bool`, if set to `True`, the filter will also include this node (if it
+      is a leaf node).
+    """
+    return self.filter_leaf_nodes_of_node(self._get_obj(), or_self=or_self)
+
+  def query_leaf_nodes(self, session=None, or_self=False):
+    """Returns a query containing leaf nodes of this node instance.
+
+    Requires that node has `tree_id`, `left`, `right` and `depth` values
+    available (that means it has “persistent version” even if the node itself
+    is in “detached” state or it is in “pending” state in `autoflush`-enabled
+    session).
+
+    :param session:
+      session object for query. If not provided, node's session is used. If
+      node is in “detached” state and :attr:`session` is not provided, query
+      will be detached too (will require setting `session` attribute to
+      execute).
+    :param or_self:
+      `bool`, if set to `True`, the filter will also include this node (if it
+      is a leaf node).
+    :return:
+      a `sqlalchemy.orm.Query` object which contains only node's descendants
+      which are themselves leaf nodes.
+    """
+    return self.query_leaf_nodes_of_node(self._get_obj(), session=session, or_self=or_self)
+
   def _get_obj(self):
     "Dereference weakref and return node instance."
     return self._obj_ref()
