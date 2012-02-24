@@ -720,6 +720,100 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(result['children'],
         map(lambda x:x.name,
             obj.tree.query_children().order_by(Named.tree).all()))
+  def test_filter_descendants_of_node(self):
+    "Verify the descendants of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['descendants'],
+        map(lambda x:x.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_descendants_of_node(obj))
+            .order_by(Named.tree).all()))
+      self.assertEqual([obj.name] + result['descendants'],
+        map(lambda x:x.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_descendants_of_node(obj, and_self=True))
+            .order_by(Named.tree).all()))
+    # permutations() is used instead of combinations() to ensure that the
+    # result is irrespective of the ordering of the nodes:
+    for results in permutations(self.result_static, 2):
+      names         = [x[0] for x in results]
+      nodes         = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      descendants   = [set(x[1]['descendants']) for x in results]
+      descendants2  = map(lambda x:x[1].union(set([x[0]])), zip(names, descendants))
+      union         = reduce(lambda l,r:l.union(r),        descendants)
+      union2        = reduce(lambda l,r:l.union(r),        descendants2)
+      intersection  = reduce(lambda l,r:l.intersection(r), descendants)
+      intersection2 = reduce(lambda l,r:l.intersection(r), descendants2)
+      self.assertEqual(union,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_descendants_of_node(*nodes))
+            .all())))
+      self.assertEqual(union2,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_descendants_of_node(*nodes, and_self=True))
+            .all())))
+      self.assertEqual(intersection,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_descendants_of_node(*nodes, disjoint=False))
+            .all())))
+      self.assertEqual(intersection2,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_descendants_of_node(*nodes, and_self=True, disjoint=False))
+            .all())))
+  def test_query_descendants_of_node(self):
+    "Verify the descendants of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['descendants'],
+        map(lambda x:x.name,
+          Named.tree.query_descendants_of_node(obj)
+            .order_by(Named.tree).all()))
+      self.assertEqual([obj.name] + result['descendants'],
+        map(lambda x:x.name,
+          Named.tree.query_descendants_of_node(obj, and_self=True)
+            .order_by(Named.tree).all()))
+    # permutations() is used instead of combinations() to ensure that the
+    # result is irrespective of the ordering of the nodes:
+    for results in permutations(self.result_static, 2):
+      names         = [x[0] for x in results]
+      nodes         = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      descendants   = [set(x[1]['descendants']) for x in results]
+      descendants2  = map(lambda x:x[1].union(set([x[0]])), zip(names, descendants))
+      union         = reduce(lambda l,r:l.union(r),        descendants)
+      union2        = reduce(lambda l,r:l.union(r),        descendants2)
+      intersection  = reduce(lambda l,r:l.intersection(r), descendants)
+      intersection2 = reduce(lambda l,r:l.intersection(r), descendants2)
+      self.assertEqual(union,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_descendants_of_node(*nodes)
+            .all())))
+      self.assertEqual(union2,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_descendants_of_node(*nodes, and_self=True)
+            .all())))
+      self.assertEqual(intersection,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_descendants_of_node(*nodes, disjoint=False)
+            .all())))
+      self.assertEqual(intersection2,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_descendants_of_node(*nodes, and_self=True, disjoint=False)
+            .all())))
   def test_filter_descendants(self):
     "Verify the descendants of each node against expected values"
     for pattern in self.result_static:

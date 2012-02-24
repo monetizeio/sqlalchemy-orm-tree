@@ -231,32 +231,7 @@ class TreeInstanceManager(TreeClassManager):
       a filter clause applicable as argument for
       `sqlalchemy.orm.Query.filter()` and others.
     """
-    options = self._tree_options
-    obj     = self._get_obj()
-
-    # We don't actually need the session object, but we need to make sure the
-    # object is bound and that its tree fields are all filled out, which this
-    # method checks for:
-    #self._get_session_and_assert_flushed(obj)
-
-    tree_id = getattr(obj, self.tree_id_field.name)
-    left    = getattr(obj, self.left_field.name)
-    right   = getattr(obj, self.right_field.name) - 1
-
-    # Restrict ourselves to just those nodes within the same tree:
-    filter_ = self.tree_id_field == tree_id
-
-    # If the caller requests the specified node to be included, this is most
-    # easily accomplished by decrementing left by one, so that the node is now
-    # included in the resulting interval:
-    if not and_self:
-      left = left + 1
-    # Any node which has a left value between this node's left and right
-    # values must be a descendant of this node:
-    filter_ &= sqlalchemy.between(self.left_field, left, right)
-
-    # Filter is complete!
-    return filter_
+    return self.filter_descendants_of_node(self._get_obj(), and_self=and_self)
 
   def query_descendants(self, session=None, and_self=False):
     """Get a query for node's descendants.
@@ -274,11 +249,7 @@ class TreeInstanceManager(TreeClassManager):
     :return:
       a `sqlalchemy.orm.Query` object which contains only node's descendants.
     """
-    # This simply builds on other methods to return a query with the
-    # appropriate filter clause already applied:
-    query = self._get_query(self._get_obj(), session) \
-                .filter(self.filter_descendants(and_self=and_self))
-    return query
+    return self.query_descendants_of_node(self._get_obj(), session=session, and_self=and_self)
 
   def get_descendant_count(self):
     "Returns the number of descendants this node has."
