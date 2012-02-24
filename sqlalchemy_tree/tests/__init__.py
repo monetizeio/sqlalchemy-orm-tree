@@ -474,6 +474,30 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(result['parent'],
         map(lambda x:x.name,
           db.session.query(Named).filter(obj.tree.filter_parent()).all()))
+  def test_filter_parent_of_node(self):
+    "Verify the parent of each node against the expected value"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['parent'],
+        map(lambda x:x and x.name or None,
+          db.session.query(Named).filter(Named.tree.filter_parent_of_node(obj)).all()))
+  def test_query_parent_of_node(self):
+    "Verify the parent of each node against the expected value"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['parent'],
+        map(lambda x:x.name,
+          Named.tree.query_parent_of_node(obj).all()))
+  def test_filter_parent(self):
+    "Verify the parent of each node against the expected value"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['parent'],
+        map(lambda x:x.name,
+          db.session.query(Named).filter(obj.tree.filter_parent()).all()))
   def test_filter_ancestors(self):
     "Verify the ancestors of each node against expected values"
     for pattern in self.result_static:

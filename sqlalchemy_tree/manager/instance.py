@@ -173,14 +173,7 @@ class TreeInstanceManager(TreeClassManager):
 
   def filter_parent(self):
     "Get a filter condition for a node's parent."
-    options = self._tree_options
-    obj = self._get_obj()
-    #self._get_session_and_assert_flushed(obj)
-    parent_id = getattr(obj, self.parent_id_field.name)
-    if parent_id is None:
-        return sqlalchemy.sql.literal(False)
-    filter_ = self.pk_field == parent_id
-    return filter_
+    return self.filter_parent_of_node(self._get_obj())
 
   def filter_ancestors(self, and_self=False):
     "The same as :meth:`filter_descendants` but filters ancestor nodes."

@@ -242,6 +242,22 @@ class TreeClassManager(object):
     return session.query(self.node_class) \
                   .filter(self.filter_root_node_of_node(*args, **kwargs))
 
+  def filter_parent_of_node(self, *args):
+    "Get a filter condition for the parents of passed-in nodes."
+    parent_ids = filter(
+      lambda parent_id:parent_id is not None,
+      map(
+        lambda node:getattr(node, self.parent_id_field.name), args))
+    return self.pk_field.in_(parent_ids)
+
+  def query_parent_of_node(self, *args, **kwargs):
+    "Returns a query containing the parents of passed-in nodes."
+    session = kwargs.pop('session', None)
+    if session is None:
+      session = self._get_session_from_args_or_self(*args)
+    return session.query(self.node_class) \
+                  .filter(self.filter_parent_of_node(*args, **kwargs))
+
   # Constants used to specify a desired position relative to another node, for
   # use in moving and insertion methods that take a target parameter.
   POSITION_LEFT        = 'left'
