@@ -396,6 +396,30 @@ class NamedTestCase(TreeTestMixin, TestCase):
     self.assertIsInstance(Named().tree.depth_field,      sqlalchemy.schema.Column)
     self.assertIsInstance(Named().tree.depth_field.type, sqlalchemy_tree.types.TreeDepthType)
     self.assertEqual(Named().tree.depth_field.name,      'tree_depth')
+  def test_pk_property(self):
+    "Named().tree.pk returns ‘id’ value."
+    for node in db.session.query(Named).all():
+      self.assertEqual(node.id, node.tree.pk)
+  def test_parent_id_property(self):
+    "Named().tree.parent_id returns ‘parent_id’ value."
+    for node in db.session.query(Named).all():
+      self.assertEqual(node.parent_id, node.tree.parent_id)
+  def test_parent_property(self):
+    "Named().tree.parent returns ‘parent’ related object."
+    for node in db.session.query(Named).all():
+      self.assertEqual(node.parent, node.tree.parent)
+  def test_tree_id_left_right_depth_properties(self):
+    "tree_id, left, right, and depth attributes of Named().tree return corresponding tree properties."
+    def _helper(name, params, children):
+      node = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(node.tree.tree_id, params['id'])
+      self.assertEqual(node.tree.left,    params['left'])
+      self.assertEqual(node.tree.right,   params['right'])
+      self.assertEqual(node.tree.depth,   params['depth'])
+      for pattern in children:
+        _helper(*pattern)
+    for pattern in self.name_pattern:
+      _helper(*pattern)
   def test_filter_root_nodes(self):
     "Verify the root nodes against the expected values"
     expected = sorted([x[0] for x in self.name_pattern])
