@@ -157,7 +157,7 @@ def get_tree_details():
   def _get_subtree(parent):
     if parent is None:
       children = db.session.query(Named) \
-                           .filter(Named.tree.filter_root_node()) \
+                           .filter(Named.tree.filter_root_nodes()) \
                            .order_by(options.tree_id_field) \
                            .all()
     else:
@@ -441,12 +441,6 @@ class NamedTestCase(TreeTestMixin, TestCase):
       _helper(*pattern)
   def test_filter_root_node(self):
     "Verify the root nodes against the expected values"
-    expected = sorted([x[0] for x in self.name_pattern])
-    self.assertEqual(expected, [x.name for x in
-      db.session.query(Named)
-                .filter(Named.tree.filter_root_node())
-                .order_by(Named.name)
-                .all()])
     for node in db.session.query(Named).all():
       root = db.session.query(Named) \
                        .filter(node.tree.filter_root_node()) \
@@ -455,11 +449,6 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(root.tree.tree_id, node.tree.tree_id)
   def test_query_root_node(self):
     "Verify the root nodes against the expected values"
-    expected = sorted([x[0] for x in self.name_pattern])
-    self.assertEqual(expected, [x.name for x in
-      Named.tree.query_root_node(session=db.session)
-                .order_by(Named.name)
-                .all()])
     for node in db.session.query(Named).all():
       root = node.tree.query_root_node().one()
       self.assertEqual(root.tree.depth,   0)
@@ -470,6 +459,21 @@ class NamedTestCase(TreeTestMixin, TestCase):
       root = node.tree.root_node
       self.assertEqual(root.tree.depth,   0)
       self.assertEqual(root.tree.tree_id, node.tree.tree_id)
+  def test_filter_root_nodes(self):
+    "Verify the root nodes against the expected values"
+    expected = sorted([x[0] for x in self.name_pattern])
+    self.assertEqual(expected, [x.name for x in
+      db.session.query(Named)
+                .filter(Named.tree.filter_root_nodes())
+                .order_by(Named.name)
+                .all()])
+  def test_query_root_nodes(self):
+    "Verify the root nodes against the expected values"
+    expected = sorted([x[0] for x in self.name_pattern])
+    self.assertEqual(expected, [x.name for x in
+      Named.tree.query_root_nodes(session=db.session)
+                .order_by(Named.name)
+                .all()])
   def test_filter_root_node_by_tree_id(self):
     "Verify root node from tree id against expected value"
     def _process_node(root_name, node_name, children):
