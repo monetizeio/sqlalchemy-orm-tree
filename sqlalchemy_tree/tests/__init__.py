@@ -244,25 +244,25 @@ class NamedTestCase(TreeTestMixin, TestCase):
       'parent': [],
       'children': ['child11','child12','child13'],
       'descendants': ['child11','child12','child13'],
-      'leaf_nodes': ['child11','child12','child13']}),
+      'leaf-nodes': ['child11','child12','child13']}),
     (u"child11", {
       'ancestors': ['root1'],
       'parent': ['root1'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     (u"child12", {
       'ancestors': ['root1'],
       'parent': ['root1'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     (u"child13", {
       'ancestors': ['root1'],
       'parent': ['root1'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     (u"root2", {
       'ancestors': [],
       'parent': [],
@@ -270,7 +270,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
       'descendants': [
         'child21','child211','child212','child2121','child2122','child21221',
         'child21222','child22','child23'],
-      'leaf_nodes': ['child211','child2121','child21221','child21222',
+      'leaf-nodes': ['child211','child2121','child21221','child21222',
         'child22','child23']}),
     (u"child21", {
       'ancestors': ['root2'],
@@ -279,61 +279,61 @@ class NamedTestCase(TreeTestMixin, TestCase):
       'descendants': [
         'child211','child212','child2121','child2122','child21221',
         'child21222'],
-      'leaf_nodes': ['child211','child2121','child21221','child21222']}),
+      'leaf-nodes': ['child211','child2121','child21221','child21222']}),
     (u"child211", {
       'ancestors': ['root2','child21'],
       'parent': ['child21'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     (u"child212", {
       'ancestors': ['root2','child21'],
       'parent': ['child21'],
       'children': ['child2121','child2122'],
       'descendants': ['child2121','child2122','child21221','child21222'],
-      'leaf_nodes': ['child2121','child21221','child21222']}),
+      'leaf-nodes': ['child2121','child21221','child21222']}),
     (u"child2121", {
       'ancestors': ['root2','child21','child212'],
       'parent': ['child212'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     (u"child2122", {
       'ancestors': ['root2','child21','child212'],
       'parent': ['child212'],
       'children': ['child21221','child21222'],
       'descendants': ['child21221','child21222'],
-      'leaf_nodes': ['child21221','child21222']}),
+      'leaf-nodes': ['child21221','child21222']}),
     (u"child21221", {
       'ancestors': ['root2','child21','child212','child2122'],
       'parent': ['child2122'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     (u"child21222", {
       'ancestors': ['root2','child21','child212','child2122'],
       'parent': ['child2122'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     (u"child22", {
       'ancestors': ['root2'],
       'parent': ['root2'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     (u"child23", {
       'ancestors': ['root2'],
       'parent': ['root2'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     (u"root3", {
       'ancestors': [],
       'parent': [],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
   ]
   def test_named_hasattr_tree_id(self):
     "‘named’ table has extra column ‘tree_id’"
@@ -863,7 +863,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
     for pattern in self.result_static:
       name, result = pattern
       obj = db.session.query(Named).filter_by(name=name).one()
-      self.assertEqual(result['leaf_nodes'],
+      self.assertEqual(result['leaf-nodes'],
         map(lambda x:x.name,
           db.session.query(Named)
             .filter(obj.tree.filter_leaf_nodes())
@@ -872,7 +872,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
         expected = []
       else:
         expected = [obj.name]
-      self.assertEqual(expected + result['leaf_nodes'],
+      self.assertEqual(expected + result['leaf-nodes'],
         map(lambda x:x.name,
           db.session.query(Named)
             .filter(obj.tree.filter_leaf_nodes(or_self=True))
@@ -890,14 +890,14 @@ class NamedTestCase(TreeTestMixin, TestCase):
     for pattern in self.result_static:
       name, result = pattern
       obj = db.session.query(Named).filter_by(name=name).one()
-      self.assertEqual(result['leaf_nodes'],
+      self.assertEqual(result['leaf-nodes'],
         map(lambda x:x.name,
             obj.tree.query_leaf_nodes().order_by(Named.tree).all()))
       if result['descendants']:
         expected = []
       else:
         expected = [obj.name]
-      self.assertEqual(expected + result['leaf_nodes'],
+      self.assertEqual(expected + result['leaf-nodes'],
         map(lambda x:x.name,
             obj.tree.query_leaf_nodes(or_self=True).order_by(Named.tree).all()))
     expected = set(map(
@@ -912,7 +912,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
     for pattern in self.name_pattern:
       name, params, children = pattern
       expected = set(map(
-        lambda x:x[1]['leaf_nodes'] or [x[0]],
+        lambda x:x[1]['leaf-nodes'] or [x[0]],
         filter(lambda x:x[0] == name, self.result_static))[0])
       self.assertEqual(expected, set(map(
         lambda node:node.name,
@@ -924,7 +924,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
     for pattern in self.name_pattern:
       name, params, children = pattern
       expected = set(map(
-        lambda x:x[1]['leaf_nodes'] or [x[0]],
+        lambda x:x[1]['leaf-nodes'] or [x[0]],
         filter(lambda x:x[0] == name, self.result_static))[0])
       self.assertEqual(expected, set(map(
         lambda node:node.name,
@@ -934,12 +934,12 @@ class NamedTestCase(TreeTestMixin, TestCase):
     for pattern in self.result_static:
       name, result = pattern
       obj = db.session.query(Named).filter_by(name=name).one()
-      self.assertEqual(result['leaf_nodes'],
+      self.assertEqual(result['leaf-nodes'],
         map(lambda x:x.name,
           db.session.query(Named)
             .filter(Named.tree.filter_leaf_nodes_of_node(obj))
             .order_by(Named.tree).all()))
-      self.assertEqual(result['leaf_nodes'] or [obj.name],
+      self.assertEqual(result['leaf-nodes'] or [obj.name],
         map(lambda x:x.name,
           db.session.query(Named)
             .filter(Named.tree.filter_leaf_nodes_of_node(obj, or_self=True))
@@ -949,7 +949,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
     for results in permutations(self.result_static, 2):
       names         = [x[0] for x in results]
       nodes         = [db.session.query(Named).filter_by(name=x).one() for x in names]
-      leaf_nodes    = [set(x[1]['leaf_nodes']) for x in results]
+      leaf_nodes    = [set(x[1]['leaf-nodes']) for x in results]
       leaf_nodes2   = map(lambda x:x[1] or set([x[0]]), zip(names, leaf_nodes))
       union         = reduce(lambda l,r:l.union(r),        leaf_nodes)
       union2        = reduce(lambda l,r:l.union(r),        leaf_nodes2)
@@ -984,11 +984,11 @@ class NamedTestCase(TreeTestMixin, TestCase):
     for pattern in self.result_static:
       name, result = pattern
       obj = db.session.query(Named).filter_by(name=name).one()
-      self.assertEqual(result['leaf_nodes'],
+      self.assertEqual(result['leaf-nodes'],
         map(lambda x:x.name,
           Named.tree.query_leaf_nodes_of_node(obj)
             .order_by(Named.tree).all()))
-      self.assertEqual(result['leaf_nodes'] or [obj.name],
+      self.assertEqual(result['leaf-nodes'] or [obj.name],
         map(lambda x:x.name,
           Named.tree.query_leaf_nodes_of_node(obj, or_self=True)
             .order_by(Named.tree).all()))
@@ -997,7 +997,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
     for results in permutations(self.result_static, 2):
       names         = [x[0] for x in results]
       nodes         = [db.session.query(Named).filter_by(name=x).one() for x in names]
-      leaf_nodes    = [set(x[1]['leaf_nodes']) for x in results]
+      leaf_nodes    = [set(x[1]['leaf-nodes']) for x in results]
       leaf_nodes2   = map(lambda x:x[1] or set([x[0]]), zip(names, leaf_nodes))
       union         = reduce(lambda l,r:l.union(r),        leaf_nodes)
       union2        = reduce(lambda l,r:l.union(r),        leaf_nodes2)
@@ -1471,68 +1471,68 @@ class ExplicitMoveTestCase(NamedTestCase):
       'children': ['platformer','shmup'],
       'descendants': ['platformer','platformer_2d','platformer_3d',
         'platformer_4d','shmup','shmup_vertical','shmup_horizontal'],
-      'leaf_nodes': ['platformer_2d','platformer_3d','platformer_4d',
+      'leaf-nodes': ['platformer_2d','platformer_3d','platformer_4d',
         'shmup_vertical','shmup_horizontal']}),
     ('platformer', {
       'ancestors': ['action'],
       'parent': ['action'],
       'children': ['platformer_2d','platformer_3d','platformer_4d'],
       'descendants': ['platformer_2d','platformer_3d','platformer_4d'],
-      'leaf_nodes': ['platformer_2d','platformer_3d','platformer_4d']}),
+      'leaf-nodes': ['platformer_2d','platformer_3d','platformer_4d']}),
     ('platformer_2d', {
       'ancestors': ['action','platformer'],
       'parent': ['platformer'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     ('platformer_3d', {
       'ancestors': ['action','platformer'],
       'parent': ['platformer'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     ('platformer_4d', {
       'ancestors': ['action','platformer'],
       'parent': ['platformer'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     ('shmup', {
       'ancestors': ['action'],
       'parent': ['action'],
       'children': ['shmup_vertical','shmup_horizontal'],
       'descendants': ['shmup_vertical','shmup_horizontal'],
-      'leaf_nodes': ['shmup_vertical','shmup_horizontal']}),
+      'leaf-nodes': ['shmup_vertical','shmup_horizontal']}),
     ('shmup_vertical', {
       'ancestors': ['action','shmup'],
       'parent': ['shmup'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     ('shmup_horizontal', {
       'ancestors': ['action','shmup'],
       'parent': ['shmup'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     ('rpg', {
       'ancestors': [],
       'parent': [],
       'children': ['arpg','trpg'],
       'descendants': ['arpg','trpg'],
-      'leaf_nodes': ['arpg','trpg']}),
+      'leaf-nodes': ['arpg','trpg']}),
     ('arpg', {
       'ancestors': ['rpg'],
       'parent': ['rpg'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
     ('trpg', {
       'ancestors': ['rpg'],
       'parent': ['rpg'],
       'children': [],
       'descendants': [],
-      'leaf_nodes': []}),
+      'leaf-nodes': []}),
   ]
   def _do_insert_and_check(self, result, node_name, target_name=None, position=Named.tree.POSITION_LAST_CHILD):
     node   = db.session.query(Named).filter_by(name=node_name).one()
