@@ -186,10 +186,6 @@ class TreeInstanceManager(TreeClassManager):
     "Return the root node of the tree which includes this node."
     return self.query_root_node_of_node(self._get_obj()).one()
 
-  def filter_parent(self):
-    "Get a filter condition for a node's parent."
-    return self.filter_parent_of_node(self._get_obj())
-
   def filter_ancestors(self, and_self=False):
     "The same as :meth:`filter_descendants` but filters ancestor nodes."
     return self.filter_ancestors_of_node(self._get_obj(), and_self=and_self)
@@ -197,6 +193,10 @@ class TreeInstanceManager(TreeClassManager):
   def query_ancestors(self, session=None, and_self=False):
     "The same as :meth:`query_descendants` but queries node's ancestors."
     return self.query_ancestors_of_node(self._get_obj(), session=session, and_self=and_self)
+
+  def filter_parent(self):
+    "Get a filter condition for a node's parent."
+    return self.filter_parent_of_node(self._get_obj())
 
   def filter_children(self):
     """The same as :meth:`filter_descendants` but filters direct children only

@@ -240,32 +240,32 @@ class NamedTestCase(TreeTestMixin, TestCase):
   ]
   result_static = [
     (u"root1", {
-      'parent': [],
       'ancestors': [],
+      'parent': [],
       'children': ['child11','child12','child13'],
       'descendants': ['child11','child12','child13'],
       'leaf_nodes': ['child11','child12','child13']}),
     (u"child11", {
-      'parent': ['root1'],
       'ancestors': ['root1'],
+      'parent': ['root1'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     (u"child12", {
-      'parent': ['root1'],
       'ancestors': ['root1'],
+      'parent': ['root1'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     (u"child13", {
-      'parent': ['root1'],
       'ancestors': ['root1'],
+      'parent': ['root1'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     (u"root2", {
-      'parent': [],
       'ancestors': [],
+      'parent': [],
       'children': ['child21','child22','child23'],
       'descendants': [
         'child21','child211','child212','child2121','child2122','child21221',
@@ -273,64 +273,64 @@ class NamedTestCase(TreeTestMixin, TestCase):
       'leaf_nodes': ['child211','child2121','child21221','child21222',
         'child22','child23']}),
     (u"child21", {
-      'parent': ['root2'],
       'ancestors': ['root2'],
+      'parent': ['root2'],
       'children': ['child211','child212'],
       'descendants': [
         'child211','child212','child2121','child2122','child21221',
         'child21222'],
       'leaf_nodes': ['child211','child2121','child21221','child21222']}),
     (u"child211", {
-      'parent': ['child21'],
       'ancestors': ['root2','child21'],
+      'parent': ['child21'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     (u"child212", {
-      'parent': ['child21'],
       'ancestors': ['root2','child21'],
+      'parent': ['child21'],
       'children': ['child2121','child2122'],
       'descendants': ['child2121','child2122','child21221','child21222'],
       'leaf_nodes': ['child2121','child21221','child21222']}),
     (u"child2121", {
-      'parent': ['child212'],
       'ancestors': ['root2','child21','child212'],
+      'parent': ['child212'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     (u"child2122", {
-      'parent': ['child212'],
       'ancestors': ['root2','child21','child212'],
+      'parent': ['child212'],
       'children': ['child21221','child21222'],
       'descendants': ['child21221','child21222'],
       'leaf_nodes': ['child21221','child21222']}),
     (u"child21221", {
-      'parent': ['child2122'],
       'ancestors': ['root2','child21','child212','child2122'],
+      'parent': ['child2122'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     (u"child21222", {
-      'parent': ['child2122'],
       'ancestors': ['root2','child21','child212','child2122'],
+      'parent': ['child2122'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     (u"child22", {
-      'parent': ['root2'],
       'ancestors': ['root2'],
+      'parent': ['root2'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     (u"child23", {
-      'parent': ['root2'],
       'ancestors': ['root2'],
+      'parent': ['root2'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     (u"root3", {
-      'parent': [],
       'ancestors': [],
+      'parent': [],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
@@ -526,38 +526,6 @@ class NamedTestCase(TreeTestMixin, TestCase):
         _process_node(root_name, child_name, grandchildren)
     for root_name, values, children in self.name_pattern:
       _process_node(root_name, root_name, children)
-  def test_filter_parent(self):
-    "Verify the parent of each node against the expected value"
-    for pattern in self.result_static:
-      name, result = pattern
-      obj = db.session.query(Named).filter_by(name=name).one()
-      self.assertEqual(result['parent'],
-        map(lambda x:x.name,
-          db.session.query(Named).filter(obj.tree.filter_parent()).all()))
-  def test_filter_parent_of_node(self):
-    "Verify the parent of each node against the expected value"
-    for pattern in self.result_static:
-      name, result = pattern
-      obj = db.session.query(Named).filter_by(name=name).one()
-      self.assertEqual(result['parent'],
-        map(lambda x:x and x.name or None,
-          db.session.query(Named).filter(Named.tree.filter_parent_of_node(obj)).all()))
-  def test_query_parent_of_node(self):
-    "Verify the parent of each node against the expected value"
-    for pattern in self.result_static:
-      name, result = pattern
-      obj = db.session.query(Named).filter_by(name=name).one()
-      self.assertEqual(result['parent'],
-        map(lambda x:x.name,
-          Named.tree.query_parent_of_node(obj).all()))
-  def test_filter_parent(self):
-    "Verify the parent of each node against the expected value"
-    for pattern in self.result_static:
-      name, result = pattern
-      obj = db.session.query(Named).filter_by(name=name).one()
-      self.assertEqual(result['parent'],
-        map(lambda x:x.name,
-          db.session.query(Named).filter(obj.tree.filter_parent()).all()))
   def test_filter_ancestors(self):
     "Verify the ancestors of each node against expected values"
     for pattern in self.result_static:
@@ -584,6 +552,30 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(result['ancestors'] + [obj.name],
         map(lambda x:x.name,
             obj.tree.query_ancestors(and_self=True).order_by(Named.tree).all()))
+  def test_filter_parent(self):
+    "Verify the parent of each node against the expected value"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['parent'],
+        map(lambda x:x.name,
+          db.session.query(Named).filter(obj.tree.filter_parent()).all()))
+  def test_filter_parent_of_node(self):
+    "Verify the parent of each node against the expected value"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['parent'],
+        map(lambda x:x and x.name or None,
+          db.session.query(Named).filter(Named.tree.filter_parent_of_node(obj)).all()))
+  def test_query_parent_of_node(self):
+    "Verify the parent of each node against the expected value"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['parent'],
+        map(lambda x:x.name,
+          Named.tree.query_parent_of_node(obj).all()))
   def test_filter_ancestors_of_node(self):
     "Verify the ancestors of each node against expected values"
     for pattern in self.result_static:
@@ -1474,70 +1466,70 @@ class ExplicitMoveTestCase(NamedTestCase):
   ]
   result_static = [
     ('action', {
-      'parent': [],
       'ancestors': [],
+      'parent': [],
       'children': ['platformer','shmup'],
       'descendants': ['platformer','platformer_2d','platformer_3d',
         'platformer_4d','shmup','shmup_vertical','shmup_horizontal'],
       'leaf_nodes': ['platformer_2d','platformer_3d','platformer_4d',
         'shmup_vertical','shmup_horizontal']}),
     ('platformer', {
-      'parent': ['action'],
       'ancestors': ['action'],
+      'parent': ['action'],
       'children': ['platformer_2d','platformer_3d','platformer_4d'],
       'descendants': ['platformer_2d','platformer_3d','platformer_4d'],
       'leaf_nodes': ['platformer_2d','platformer_3d','platformer_4d']}),
     ('platformer_2d', {
-      'parent': ['platformer'],
       'ancestors': ['action','platformer'],
+      'parent': ['platformer'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     ('platformer_3d', {
-      'parent': ['platformer'],
       'ancestors': ['action','platformer'],
+      'parent': ['platformer'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     ('platformer_4d', {
-      'parent': ['platformer'],
       'ancestors': ['action','platformer'],
+      'parent': ['platformer'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     ('shmup', {
-      'parent': ['action'],
       'ancestors': ['action'],
+      'parent': ['action'],
       'children': ['shmup_vertical','shmup_horizontal'],
       'descendants': ['shmup_vertical','shmup_horizontal'],
       'leaf_nodes': ['shmup_vertical','shmup_horizontal']}),
     ('shmup_vertical', {
-      'parent': ['shmup'],
       'ancestors': ['action','shmup'],
+      'parent': ['shmup'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     ('shmup_horizontal', {
-      'parent': ['shmup'],
       'ancestors': ['action','shmup'],
+      'parent': ['shmup'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     ('rpg', {
-      'parent': [],
       'ancestors': [],
+      'parent': [],
       'children': ['arpg','trpg'],
       'descendants': ['arpg','trpg'],
       'leaf_nodes': ['arpg','trpg']}),
     ('arpg', {
-      'parent': ['rpg'],
       'ancestors': ['rpg'],
+      'parent': ['rpg'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),
     ('trpg', {
-      'parent': ['rpg'],
       'ancestors': ['rpg'],
+      'parent': ['rpg'],
       'children': [],
       'descendants': [],
       'leaf_nodes': []}),

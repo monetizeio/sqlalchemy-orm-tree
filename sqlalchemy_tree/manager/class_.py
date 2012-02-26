@@ -239,22 +239,6 @@ class TreeClassManager(object):
     return session.query(self.node_class) \
                   .filter(self.filter_root_node_of_node(*args, **kwargs))
 
-  def filter_parent_of_node(self, *args):
-    "Get a filter condition for the parents of passed-in nodes."
-    parent_ids = filter(
-      lambda parent_id:parent_id is not None,
-      map(
-        lambda node:getattr(node, self.parent_id_field.name), args))
-    return self.pk_field.in_(parent_ids)
-
-  def query_parent_of_node(self, *args, **kwargs):
-    "Returns a query containing the parents of passed-in nodes."
-    session = kwargs.pop('session', None)
-    if session is None:
-      session = self._get_session_from_args_or_self(*args)
-    return session.query(self.node_class) \
-                  .filter(self.filter_parent_of_node(*args, **kwargs))
-
   def filter_ancestors_of_node(self, *args, **kwargs):
     "Returns a filter condition for the ancestors of passed-in nodes."
     options  = self._tree_options
@@ -299,6 +283,22 @@ class TreeClassManager(object):
       session = self._get_session_from_args_or_self(*args)
     return session.query(self.node_class) \
                   .filter(self.filter_ancestors_of_node(*args, **kwargs))
+
+  def filter_parent_of_node(self, *args):
+    "Get a filter condition for the parents of passed-in nodes."
+    parent_ids = filter(
+      lambda parent_id:parent_id is not None,
+      map(
+        lambda node:getattr(node, self.parent_id_field.name), args))
+    return self.pk_field.in_(parent_ids)
+
+  def query_parent_of_node(self, *args, **kwargs):
+    "Returns a query containing the parents of passed-in nodes."
+    session = kwargs.pop('session', None)
+    if session is None:
+      session = self._get_session_from_args_or_self(*args)
+    return session.query(self.node_class) \
+                  .filter(self.filter_parent_of_node(*args, **kwargs))
 
   def filter_children_of_node(self, *args):
     "Returns a filter condition for the children of passed-in nodes."
