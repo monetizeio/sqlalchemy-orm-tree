@@ -490,6 +490,11 @@ class TreeClassManager(object):
     #       associated with a session.
     return sqlalchemy.orm.object_session(self._get_obj())
 
+# FIXME: write a helper routine that converts the args parameters of the
+#   various *_of_node methods into standard form, so that either a positional
+#   list of nodes, or a single list, set, or query object (or filter?) of
+#   nodes in the first positional parameter can be used.
+
 # ===----------------------------------------------------------------------===
 # End of File
 # ===----------------------------------------------------------------------===
