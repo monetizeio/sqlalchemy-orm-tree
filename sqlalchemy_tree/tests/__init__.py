@@ -1420,6 +1420,157 @@ class NamedTestCase(TreeTestMixin, TestCase):
       name, result = pattern
       obj = db.session.query(Named).filter_by(name=name).one()
       self.assertEqual(not bool(result['parent']), obj.tree.is_root_node)
+  def test_is_child_node(self):
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(bool(result['parent']), obj.tree.is_child_node)
+  def test_is_leaf_node(self):
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(not bool(result['children']), obj.tree.is_leaf_node)
+  def test_is_ancestor_of(self):
+    for results in permutations(self.result_static, 2):
+      names = [x[0] for x in results]
+      nodes = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      self.assertEqual(
+        names[0] in results[1][1]['ancestors'],
+        nodes[0].tree.is_ancestor_of(nodes[1]))
+      self.assertEqual(
+        names[0] in results[1][1]['ancestors'] or names[0] == names[1],
+        nodes[0].tree.is_ancestor_of(nodes[1], include_self=True))
+  def test_is_sibling_of(self):
+    for results in permutations(self.result_static, 2):
+      names = [x[0] for x in results]
+      nodes = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      self.assertEqual(
+        names[0] in results[1][1]['previous-siblings'] or
+        names[0] in results[1][1]['next-siblings'],
+        nodes[0].tree.is_sibling_of(nodes[1]))
+      self.assertEqual(
+        names[0] in results[1][1]['previous-siblings'] or
+        names[0] in results[1][1]['next-siblings']     or
+        names[0] == names[1],
+        nodes[0].tree.is_sibling_of(nodes[1], include_self=True))
+  def test_is_child_of(self):
+    for results in permutations(self.result_static, 2):
+      names = [x[0] for x in results]
+      nodes = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      self.assertEqual(
+        names[0] in results[1][1]['children'],
+        nodes[0].tree.is_child_of(nodes[1]))
+  def test_is_descendant_of(self):
+    for results in permutations(self.result_static, 2):
+      names = [x[0] for x in results]
+      nodes = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      self.assertEqual(
+        names[0] in results[1][1]['descendants'],
+        nodes[0].tree.is_descendant_of(nodes[1]))
+      self.assertEqual(
+        names[0] in results[1][1]['descendants'] or names[0] == names[1],
+        nodes[0].tree.is_descendant_of(nodes[1], include_self=True))
+  def test_are_root_nodes(self):
+    for results in permutations(self.result_static, 2):
+      names = [x[0] for x in results]
+      nodes = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      self.assertEqual(
+        results[0][1]['parent'] == [] or
+        results[1][1]['parent'] == [],
+        Named.tree.any_root_nodes(*nodes))
+      self.assertEqual(
+        results[0][1]['parent'] == [] and
+        results[1][1]['parent'] == [],
+        Named.tree.all_root_nodes(*nodes))
+  def test_are_child_nodes(self):
+    for results in permutations(self.result_static, 2):
+      names = [x[0] for x in results]
+      nodes = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      self.assertEqual(
+        bool(results[0][1]['parent']) or
+        bool(results[1][1]['parent']),
+        Named.tree.any_child_nodes(*nodes))
+      self.assertEqual(
+        bool(results[0][1]['parent']) and
+        bool(results[1][1]['parent']),
+        Named.tree.all_child_nodes(*nodes))
+  def test_are_leaf_nodes(self):
+    for results in permutations(self.result_static, 2):
+      names = [x[0] for x in results]
+      nodes = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      self.assertEqual(
+        results[0][1]['children'] == [] or
+        results[1][1]['children'] == [],
+        Named.tree.any_leaf_nodes(*nodes))
+      self.assertEqual(
+        results[0][1]['children'] == [] and
+        results[1][1]['children'] == [],
+        Named.tree.all_leaf_nodes(*nodes))
+  def test_ancestors_of(self):
+    for results in permutations(self.result_static, 3):
+      names = [x[0] for x in results]
+      nodes = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      ancestors  = results[0][1]['ancestors']
+      ancestors2 = results[0][1]['ancestors'] + names[:1]
+      self.assertEqual(
+        names[1] in ancestors or names[2] in ancestors,
+        Named.tree.any_ancestors_of(*nodes))
+      self.assertEqual(
+        names[1] in ancestors2 or names[2] in ancestors2,
+        Named.tree.any_ancestors_of(*nodes, include_self=True))
+      self.assertEqual(
+        names[1] in ancestors and names[2] in ancestors,
+        Named.tree.all_ancestors_of(*nodes))
+      self.assertEqual(
+        names[1] in ancestors2 and names[2] in ancestors2,
+        Named.tree.all_ancestors_of(*nodes, include_self=True))
+  def test_siblings_of(self):
+    for results in permutations(self.result_static, 3):
+      names     = [x[0] for x in results]
+      nodes     = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      siblings  = results[0][1]['previous-siblings'] + results[0][1]['next-siblings']
+      siblings2 = results[0][1]['previous-siblings'] + names[:1] + results[0][1]['next-siblings']
+      self.assertEqual(
+        names[1] in siblings or names[2] in siblings,
+        Named.tree.any_siblings_of(*nodes))
+      self.assertEqual(
+        names[1] in siblings2 or names[2] in siblings2,
+        Named.tree.any_siblings_of(*nodes, include_self=True))
+      self.assertEqual(
+        names[1] in siblings and names[2] in siblings,
+        Named.tree.all_siblings_of(*nodes))
+      self.assertEqual(
+        names[1] in siblings2 and names[2] in siblings2,
+        Named.tree.all_siblings_of(*nodes, include_self=True))
+  def test_children_of(self):
+    for results in permutations(self.result_static, 3):
+      names    = [x[0] for x in results]
+      nodes    = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      children = results[0][1]['children']
+      self.assertEqual(
+        names[1] in children or names[2] in children,
+        Named.tree.any_children_of(*nodes))
+      self.assertEqual(
+        names[1] in children and names[2] in children,
+        Named.tree.all_children_of(*nodes))
+  def test_descendants_of(self):
+    for results in permutations(self.result_static, 3):
+      names = [x[0] for x in results]
+      nodes = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      descendants  = results[0][1]['descendants']
+      descendants2 = names[:1] + results[0][1]['descendants']
+      self.assertEqual(
+        names[1] in descendants or names[2] in descendants,
+        Named.tree.any_descendants_of(*nodes))
+      self.assertEqual(
+        names[1] in descendants2 or names[2] in descendants2,
+        Named.tree.any_descendants_of(*nodes, include_self=True))
+      self.assertEqual(
+        names[1] in descendants and names[2] in descendants,
+        Named.tree.all_descendants_of(*nodes))
+      self.assertEqual(
+        names[1] in descendants2 and names[2] in descendants2,
+        Named.tree.all_descendants_of(*nodes, include_self=True))
 
 # ===----------------------------------------------------------------------===
 

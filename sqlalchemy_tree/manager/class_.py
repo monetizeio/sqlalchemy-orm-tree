@@ -593,6 +593,184 @@ class TreeClassManager(object):
     return session.query(self.node_class) \
                   .filter(self.filter_leaf_nodes_of_node(*args, **kwargs))
 
+  def any_root_nodes(self, *args):
+    "Return `True` if any of the positional arguments are root nodes."
+    return reduce(
+      lambda l,r: l or r,
+      map(
+        lambda node: getattr(node, self.parent_id_field.name) is None,
+        args))
+
+  def all_root_nodes(self, *args):
+    "Return `False` unless every one of the positional arguments is a root node."
+    return reduce(
+      lambda l,r: l and r,
+      map(
+        lambda node: getattr(node, self.parent_id_field.name) is None,
+        args))
+
+  def any_child_nodes(self, *args):
+    "Return `True` if any of the positional arguments are child nodes."
+    return reduce(
+      lambda l,r: l or r,
+      map(
+        lambda node: getattr(node, self.parent_id_field.name) is not None,
+        args))
+
+  def all_child_nodes(self, *args):
+    "Return `False` unless every one of the positional arguments is a child node."
+    return reduce(
+      lambda l,r: l and r,
+      map(
+        lambda node: getattr(node, self.parent_id_field.name) is not None,
+        args))
+
+  def any_leaf_nodes(self, *args):
+    "Return `True` if any of the positional arguments are leaf nodes."
+    return reduce(
+      lambda l,r: l or r,
+      map(
+        lambda node: getattr(node, self.left_field.name) ==
+                     getattr(node, self.right_field.name)-1,
+        args))
+
+  def all_leaf_nodes(self, *args):
+    """Return `False` unless every one of the positional arguments is a leaf
+    node."""
+    return reduce(
+      lambda l,r: l and r,
+      map(
+        lambda node: getattr(node, self.left_field.name) ==
+                     getattr(node, self.right_field.name)-1,
+        args))
+
+  def any_ancestors_of(self, descendant, *args, **kwargs):
+    """Return `True` if the first positional argument is a descendant of any
+    of the positional arguments that follow."""
+    include_self = kwargs.pop('include_self', False) # Include self in results
+    for extra in kwargs:
+      raise TypeError, u"unexpected keyword argument '%s'" % extra
+    return self._are_ancestors_of_helper(True, include_self, descendant, *args)
+
+  def all_ancestors_of(self, descendant, *args, **kwargs):
+    """Return `False` unless every one of the remaining positional arguments
+    is a ancestor of the first."""
+    include_self = kwargs.pop('include_self', False) # Include self in results
+    for extra in kwargs:
+      raise TypeError, u"unexpected keyword argument '%s'" % extra
+    return self._are_ancestors_of_helper(False, include_self, descendant, *args)
+
+  def _are_ancestors_of_helper(self, disjoint, include_self, descendant, *args):
+    tree_id = getattr(descendant, self.tree_id_field.name)
+    left    = getattr(descendant, self.left_field.name)
+    right   = getattr(descendant, self.right_field.name)
+
+    if include_self:
+      left, right = left+1, right-1
+
+    results = map(
+      lambda node:getattr(node, self.tree_id_field.name) == tree_id and
+                  getattr(node, self.left_field.name)    <  left    and
+                  getattr(node, self.right_field.name)   >  right,
+      args)
+
+    if disjoint:
+      return reduce(lambda l,r: l or r, results)
+    else:
+      return reduce(lambda l,r: l and r, results)
+
+  def any_siblings_of(self, sibling, *args, **kwargs):
+    """Return `True` if the first positional argument is a sibling of any of
+    the positional arguments that follow."""
+    include_self = kwargs.pop('include_self', False) # Include self in results
+    for extra in kwargs:
+      raise TypeError, u"unexpected keyword argument '%s'" % extra
+    return self._are_siblings_of_helper(True, include_self, sibling, *args)
+
+  def all_siblings_of(self, sibling, *args, **kwargs):
+    """Return `False` unless every one of the remaining positional arguments
+    is a sibling of the first."""
+    include_self = kwargs.pop('include_self', False) # Include self in results
+    for extra in kwargs:
+      raise TypeError, u"unexpected keyword argument '%s'" % extra
+    return self._are_siblings_of_helper(False, include_self, sibling, *args)
+
+  def _are_siblings_of_helper(self, disjoint, include_self, sibling, *args):
+    pk        = getattr(sibling, self.pk_field.name)
+    parent_id = getattr(sibling, self.parent_id_field.name)
+
+    if include_self:
+      results = map(
+        lambda node:getattr(node, self.parent_id_field.name) == parent_id and
+                    getattr(node, self.pk_field.name)        != pk,
+        args)
+    else:
+      results = map(
+        lambda node:getattr(node, self.parent_id_field.name) == parent_id,
+        args)
+
+    if disjoint:
+      return reduce(lambda l,r: l or r, results)
+    else:
+      return reduce(lambda l,r: l and r, results)
+
+  def any_children_of(self, parent, *args):
+    """Return `True` if the first positional argument is the parent of any of
+    the positional arguments that follow."""
+    return self._are_children_of_helper(True, parent, *args)
+
+  def all_children_of(self, parent, *args):
+    """Return `False` unless every one of the remaining positional arguments
+    is a child of the first."""
+    return self._are_children_of_helper(False, parent, *args)
+
+  def _are_children_of_helper(self, disjoint, parent, *args):
+    pk = getattr(parent, self.pk_field.name)
+
+    results = map(
+      lambda node:getattr(node, self.parent_id_field.name) == pk,
+      args)
+
+    if disjoint:
+      return reduce(lambda l,r: l or r, results)
+    else:
+      return reduce(lambda l,r: l and r, results)
+
+  def any_descendants_of(self, ancestor, *args, **kwargs):
+    """Return `True` if the first positional argument is a ancestor of any of
+    the positional arguments that follow."""
+    include_self = kwargs.pop('include_self', False) # Include self in results
+    for extra in kwargs:
+      raise TypeError, u"unexpected keyword argument '%s'" % extra
+    return self._are_descendants_of_helper(True, include_self, ancestor, *args)
+
+  def all_descendants_of(self, ancestor, *args, **kwargs):
+    """Return `False` unless every one of the remaining positional arguments
+    is a descendant of the first."""
+    include_self = kwargs.pop('include_self', False) # Include self in results
+    for extra in kwargs:
+      raise TypeError, u"unexpected keyword argument '%s'" % extra
+    return self._are_descendants_of_helper(False, include_self, ancestor, *args)
+
+  def _are_descendants_of_helper(self, disjoint, include_self, ancestor, *args):
+    tree_id = getattr(ancestor, self.tree_id_field.name)
+    left    = getattr(ancestor, self.left_field.name)
+    right   = getattr(ancestor, self.right_field.name)
+
+    if include_self:
+      left = left-1
+
+    results = map(
+      lambda node:getattr(node, self.tree_id_field.name) == tree_id and
+                  getattr(node, self.left_field.name)    >  left    and
+                  getattr(node, self.left_field.name)    <  right,
+      args)
+
+    if disjoint:
+      return reduce(lambda l,r: l or r, results)
+    else:
+      return reduce(lambda l,r: l and r, results)
+
   # Constants used to specify a desired position relative to another node, for
   # use in moving and insertion methods that take a target parameter.
   POSITION_LEFT        = 'left'

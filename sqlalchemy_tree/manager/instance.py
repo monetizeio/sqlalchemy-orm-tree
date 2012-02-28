@@ -347,6 +347,36 @@ class TreeInstanceManager(TreeClassManager):
     "Returns `True` if the node has no parent."
     return self.left == 1
 
+  @property
+  def is_child_node(self):
+    "Returns `True` if the node has a parent."
+    return self.left != 1
+
+  @property
+  def is_leaf_node(self):
+    "Returns `True` if the node has no children."
+    return self.left == self.right-1
+
+  def is_ancestor_of(self, descendant, include_self=False):
+    "Returns `True` if the passed-in node is a descendant of this node."
+    return self.any_ancestors_of(
+      descendant, self._get_obj(), include_self=include_self)
+
+  def is_sibling_of(self, sibling, include_self=True):
+    "Returns `True` if the passed-in node is a sibling to this node."
+    if self.parent_id != getattr(sibling, self.parent_id_field.name):
+      return False
+    return (include_self and True
+                          or self.pk != getattr(sibling, self.pk_field.name))
+
+  def is_child_of(self, parent):
+    "Returns `True` if the passed-in node is parent to this node."
+    return self.parent_id == getattr(parent, self.pk_field.name)
+
+  def is_descendant_of(self, ancestor, include_self=False):
+    "Returns `True` if the passed-in node is an ancestor of this node."
+    return self.any_descendants_of(ancestor, self._get_obj(), include_self=include_self)
+
   def _get_obj(self):
     "Dereference weakref and return node instance."
     return self._obj_ref()
