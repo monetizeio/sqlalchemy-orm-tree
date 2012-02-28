@@ -268,8 +268,9 @@ class TreeClassManager(object):
       # We're done!
       return filter_
 
-    # Combine SQL expression clauses with logical-OR, extracting a SQL
-    # expression clause identifying ancestors of each node in turn:
+    # Combine SQL expression clauses into a clause identifying the combined
+    # ancestors of each node in turn, according to the requested behavior in
+    # handling disjoint sets (logical-OR/union vs. logical-AND/intersection):
     filters = map(_filter_ancestors_of_node_helper, args)
     if disjoint:
       return reduce(lambda l,r: l | r, filters, sqlalchemy.sql.expression.false())
@@ -315,8 +316,9 @@ class TreeClassManager(object):
       # efficient.
       return self.filter_descendants_of_node(node) & (self.depth_field == depth)
 
-    # Combine SQL expression clauses with logical-OR, extracting a SQL
-    # expression clause identifying children of each node in turn:
+    # Combine SQL expression clauses into a clause identifying the combined
+    # ancestors of each node in turn, according to the requested behavior in
+    # handling disjoint sets (logical-OR/union vs. logical-AND/intersection):
     return reduce(
       lambda l,r: l | r,
       map(_filter_children_of_node_helper, args),
@@ -357,8 +359,9 @@ class TreeClassManager(object):
       # We're done!
       return filter_
 
-    # Combine SQL expression clauses with logical-OR, extracting a SQL
-    # expression clause identifying descendants of each node in turn:
+    # Combine SQL expression clauses into a clause identifying the combined
+    # ancestors of each node in turn, according to the requested behavior in
+    # handling disjoint sets (logical-OR/union vs. logical-AND/intersection):
     filters = map(_filter_descendants_of_node_helper, args)
     if disjoint:
       return reduce(lambda l,r: l | r, filters, sqlalchemy.sql.expression.false())
@@ -440,8 +443,9 @@ class TreeClassManager(object):
       # We're done!
       return filter_
 
-    # Combine SQL expression clauses with logical-OR, extracting a SQL
-    # expression clause identifying leaf nodes under each node in turn:
+    # Combine SQL expression clauses into a clause identifying the combined
+    # ancestors of each node in turn, according to the requested behavior in
+    # handling disjoint sets (logical-OR/union vs. logical-AND/intersection):
     filters = map(_filter_leaf_nodes_of_node_helper, args)
     if disjoint:
       return reduce(lambda l,r: l | r, filters, sqlalchemy.sql.expression.false())
