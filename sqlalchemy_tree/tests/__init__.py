@@ -242,30 +242,40 @@ class NamedTestCase(TreeTestMixin, TestCase):
     (u"root1", {
       'ancestors': [],
       'parent': [],
+      'previous-siblings': [],
+      'next-siblings': ['root2','root3'],
       'children': ['child11','child12','child13'],
       'descendants': ['child11','child12','child13'],
       'leaf-nodes': ['child11','child12','child13']}),
     (u"child11", {
       'ancestors': ['root1'],
       'parent': ['root1'],
+      'previous-siblings': [],
+      'next-siblings': ['child12', 'child13'],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child12", {
       'ancestors': ['root1'],
       'parent': ['root1'],
+      'previous-siblings': ['child11'],
+      'next-siblings': ['child13'],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child13", {
       'ancestors': ['root1'],
       'parent': ['root1'],
+      'previous-siblings': ['child11','child12'],
+      'next-siblings': [],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"root2", {
       'ancestors': [],
       'parent': [],
+      'previous-siblings': ['root1'],
+      'next-siblings': ['root3'],
       'children': ['child21','child22','child23'],
       'descendants': [
         'child21','child211','child212','child2121','child2122','child21221',
@@ -275,6 +285,8 @@ class NamedTestCase(TreeTestMixin, TestCase):
     (u"child21", {
       'ancestors': ['root2'],
       'parent': ['root2'],
+      'previous-siblings': [],
+      'next-siblings': ['child22','child23'],
       'children': ['child211','child212'],
       'descendants': [
         'child211','child212','child2121','child2122','child21221',
@@ -283,54 +295,72 @@ class NamedTestCase(TreeTestMixin, TestCase):
     (u"child211", {
       'ancestors': ['root2','child21'],
       'parent': ['child21'],
+      'previous-siblings': [],
+      'next-siblings': ['child212'],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child212", {
       'ancestors': ['root2','child21'],
       'parent': ['child21'],
+      'previous-siblings': ['child211'],
+      'next-siblings': [],
       'children': ['child2121','child2122'],
       'descendants': ['child2121','child2122','child21221','child21222'],
       'leaf-nodes': ['child2121','child21221','child21222']}),
     (u"child2121", {
       'ancestors': ['root2','child21','child212'],
       'parent': ['child212'],
+      'previous-siblings': [],
+      'next-siblings': ['child2122'],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child2122", {
       'ancestors': ['root2','child21','child212'],
       'parent': ['child212'],
+      'previous-siblings': ['child2121'],
+      'next-siblings': [],
       'children': ['child21221','child21222'],
       'descendants': ['child21221','child21222'],
       'leaf-nodes': ['child21221','child21222']}),
     (u"child21221", {
       'ancestors': ['root2','child21','child212','child2122'],
       'parent': ['child2122'],
+      'previous-siblings': [],
+      'next-siblings': ['child21222'],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child21222", {
       'ancestors': ['root2','child21','child212','child2122'],
       'parent': ['child2122'],
+      'previous-siblings': ['child21221'],
+      'next-siblings': [],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child22", {
       'ancestors': ['root2'],
       'parent': ['root2'],
+      'previous-siblings': ['child21'],
+      'next-siblings': ['child23'],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child23", {
       'ancestors': ['root2'],
       'parent': ['root2'],
+      'previous-siblings': ['child21','child22'],
+      'next-siblings': [],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"root3", {
       'ancestors': [],
       'parent': [],
+      'previous-siblings': ['root1','root2'],
+      'next-siblings': [],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
@@ -576,6 +606,368 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(result['parent'],
         map(lambda x:x.name,
           Named.tree.query_parent_of_node(obj).all()))
+  def test_filter_siblings(self):
+    "Verify the siblings of each node against the expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['previous-siblings'] + result['next-siblings'],
+        map(lambda x:x.name,
+          db.session.query(Named).filter(obj.tree.filter_siblings()).all()))
+      self.assertEqual(result['previous-siblings'] + [name] + result['next-siblings'],
+        map(lambda x:x.name,
+          db.session.query(Named).filter(obj.tree.filter_siblings(include_self=True)).all()))
+  def test_query_siblings(self):
+    "Verify the siblings of each node against the expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['previous-siblings'] + result['next-siblings'],
+        map(lambda x:x.name, obj.tree.query_siblings().all()))
+      self.assertEqual(result['previous-siblings'] + [name] + result['next-siblings'],
+        map(lambda x:x.name, obj.tree.query_siblings(include_self=True).all()))
+  def test_filter_previous_siblings(self):
+    "Verify the siblings of each node against the expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['previous-siblings'],
+        map(lambda x:x.name,
+          db.session.query(Named).filter(obj.tree.filter_previous_siblings()).all()))
+      self.assertEqual(result['previous-siblings'] + [name],
+        map(lambda x:x.name,
+          db.session.query(Named).filter(obj.tree.filter_previous_siblings(include_self=True)).all()))
+  def test_query_previous_siblings(self):
+    "Verify the siblings of each node against the expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['previous-siblings'],
+        map(lambda x:x.name, obj.tree.query_previous_siblings().all()))
+      self.assertEqual(result['previous-siblings'] + [name],
+        map(lambda x:x.name, obj.tree.query_previous_siblings(include_self=True).all()))
+  def test_filter_next_siblings(self):
+    "Verify the siblings of each node against the expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['next-siblings'],
+        map(lambda x:x.name,
+          db.session.query(Named).filter(obj.tree.filter_next_siblings()).all()))
+      self.assertEqual([name] + result['next-siblings'],
+        map(lambda x:x.name,
+          db.session.query(Named).filter(obj.tree.filter_next_siblings(include_self=True)).all()))
+  def test_query_next_siblings(self):
+    "Verify the siblings of each node against the expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['next-siblings'],
+        map(lambda x:x.name, obj.tree.query_next_siblings().all()))
+      self.assertEqual([name] + result['next-siblings'],
+        map(lambda x:x.name, obj.tree.query_next_siblings(include_self=True).all()))
+  def test_previous_sibling_property(self):
+    "Verify the previous sibling of each node against the expected value"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      sibling = obj.tree.previous_sibling
+      if sibling is None:
+        self.assertFalse(result['previous-siblings'])
+      else:
+        self.assertEqual(result['previous-siblings'][-1], sibling.name)
+  def test_next_sibling_property(self):
+    "Verify the next sibling of each node against the expected value"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      sibling = obj.tree.next_sibling
+      if sibling is None:
+        self.assertFalse(result['next-siblings'])
+      else:
+        self.assertEqual(result['next-siblings'][0], sibling.name)
+  def test_filter_siblings_of_node(self):
+    "Verify the siblings of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['previous-siblings'] + result['next-siblings'],
+        map(lambda x:x.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_siblings_of_node(obj))
+            .order_by(Named.tree).all()))
+      self.assertEqual(result['previous-siblings'] + [obj.name] + result['next-siblings'],
+        map(lambda x:x.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_siblings_of_node(obj, include_self=True))
+            .order_by(Named.tree).all()))
+    # permutations() is used instead of combinations() to ensure that the
+    # result is irrespective of the ordering of the nodes:
+    for results in permutations(self.result_static, 2):
+      names         = [x[0] for x in results]
+      nodes         = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      siblings      = [set(x[1]['previous-siblings'] + x[1]['next-siblings']) for x in results]
+      siblings2     = map(lambda x:x[1].union(set([x[0]])), zip(names, siblings))
+      union         = reduce(lambda l,r:l.union(r),        siblings)
+      union2        = reduce(lambda l,r:l.union(r),        siblings2)
+      intersection  = reduce(lambda l,r:l.intersection(r), siblings)
+      intersection2 = reduce(lambda l,r:l.intersection(r), siblings2)
+      self.assertEqual(union,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_siblings_of_node(*nodes))
+            .all())))
+      self.assertEqual(union2,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_siblings_of_node(*nodes, include_self=True))
+            .all())))
+      self.assertEqual(intersection,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_siblings_of_node(*nodes, disjoint=False))
+            .all())))
+      self.assertEqual(intersection2,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_siblings_of_node(*nodes, include_self=True, disjoint=False))
+            .all())))
+  def test_query_siblings_of_node(self):
+    "Verify the siblings of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['previous-siblings'] + result['next-siblings'],
+        map(lambda x:x.name,
+          Named.tree.query_siblings_of_node(obj)
+            .order_by(Named.tree).all()))
+      self.assertEqual(result['previous-siblings'] + [obj.name] + result['next-siblings'],
+        map(lambda x:x.name,
+          Named.tree.query_siblings_of_node(obj, include_self=True)
+            .order_by(Named.tree).all()))
+    # permutations() is used instead of combinations() to ensure that the
+    # result is irrespective of the ordering of the nodes:
+    for results in permutations(self.result_static, 2):
+      names         = [x[0] for x in results]
+      nodes         = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      siblings      = [set(x[1]['previous-siblings'] + x[1]['next-siblings']) for x in results]
+      siblings2     = map(lambda x:x[1].union(set([x[0]])), zip(names, siblings))
+      union         = reduce(lambda l,r:l.union(r),        siblings)
+      union2        = reduce(lambda l,r:l.union(r),        siblings2)
+      intersection  = reduce(lambda l,r:l.intersection(r), siblings)
+      intersection2 = reduce(lambda l,r:l.intersection(r), siblings2)
+      self.assertEqual(union,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_siblings_of_node(*nodes)
+            .all())))
+      self.assertEqual(union2,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_siblings_of_node(*nodes, include_self=True)
+            .all())))
+      self.assertEqual(intersection,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_siblings_of_node(*nodes, disjoint=False)
+            .all())))
+      self.assertEqual(intersection2,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_siblings_of_node(*nodes, include_self=True, disjoint=False)
+            .all())))
+  def test_filter_previous_siblings_of_node(self):
+    "Verify the siblings of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['previous-siblings'],
+        map(lambda x:x.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_previous_siblings_of_node(obj))
+            .order_by(Named.tree).all()))
+      self.assertEqual(result['previous-siblings'] + [obj.name],
+        map(lambda x:x.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_previous_siblings_of_node(obj, include_self=True))
+            .order_by(Named.tree).all()))
+    # permutations() is used instead of combinations() to ensure that the
+    # result is irrespective of the ordering of the nodes:
+    for results in permutations(self.result_static, 2):
+      names         = [x[0] for x in results]
+      nodes         = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      siblings      = [set(x[1]['previous-siblings']) for x in results]
+      siblings2     = map(lambda x:x[1].union(set([x[0]])), zip(names, siblings))
+      union         = reduce(lambda l,r:l.union(r),        siblings)
+      union2        = reduce(lambda l,r:l.union(r),        siblings2)
+      intersection  = reduce(lambda l,r:l.intersection(r), siblings)
+      intersection2 = reduce(lambda l,r:l.intersection(r), siblings2)
+      self.assertEqual(union,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_previous_siblings_of_node(*nodes))
+            .all())))
+      self.assertEqual(union2,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_previous_siblings_of_node(*nodes, include_self=True))
+            .all())))
+      self.assertEqual(intersection,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_previous_siblings_of_node(*nodes, disjoint=False))
+            .all())))
+      self.assertEqual(intersection2,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_previous_siblings_of_node(*nodes, include_self=True, disjoint=False))
+            .all())))
+  def test_query_previous_siblings_of_node(self):
+    "Verify the siblings of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['previous-siblings'],
+        map(lambda x:x.name,
+          Named.tree.query_previous_siblings_of_node(obj)
+            .order_by(Named.tree).all()))
+      self.assertEqual(result['previous-siblings'] + [obj.name],
+        map(lambda x:x.name,
+          Named.tree.query_previous_siblings_of_node(obj, include_self=True)
+            .order_by(Named.tree).all()))
+    # permutations() is used instead of combinations() to ensure that the
+    # result is irrespective of the ordering of the nodes:
+    for results in permutations(self.result_static, 2):
+      names         = [x[0] for x in results]
+      nodes         = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      siblings      = [set(x[1]['previous-siblings']) for x in results]
+      siblings2     = map(lambda x:x[1].union(set([x[0]])), zip(names, siblings))
+      union         = reduce(lambda l,r:l.union(r),        siblings)
+      union2        = reduce(lambda l,r:l.union(r),        siblings2)
+      intersection  = reduce(lambda l,r:l.intersection(r), siblings)
+      intersection2 = reduce(lambda l,r:l.intersection(r), siblings2)
+      self.assertEqual(union,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_previous_siblings_of_node(*nodes)
+            .all())))
+      self.assertEqual(union2,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_previous_siblings_of_node(*nodes, include_self=True)
+            .all())))
+      self.assertEqual(intersection,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_previous_siblings_of_node(*nodes, disjoint=False)
+            .all())))
+      self.assertEqual(intersection2,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_previous_siblings_of_node(*nodes, include_self=True, disjoint=False)
+            .all())))
+  def test_filter_next_siblings_of_node(self):
+    "Verify the siblings of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['next-siblings'],
+        map(lambda x:x.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_next_siblings_of_node(obj))
+            .order_by(Named.tree).all()))
+      self.assertEqual([obj.name] + result['next-siblings'],
+        map(lambda x:x.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_next_siblings_of_node(obj, include_self=True))
+            .order_by(Named.tree).all()))
+    # permutations() is used instead of combinations() to ensure that the
+    # result is irrespective of the ordering of the nodes:
+    for results in permutations(self.result_static, 2):
+      names         = [x[0] for x in results]
+      nodes         = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      siblings      = [set(x[1]['next-siblings']) for x in results]
+      siblings2     = map(lambda x:x[1].union(set([x[0]])), zip(names, siblings))
+      union         = reduce(lambda l,r:l.union(r),        siblings)
+      union2        = reduce(lambda l,r:l.union(r),        siblings2)
+      intersection  = reduce(lambda l,r:l.intersection(r), siblings)
+      intersection2 = reduce(lambda l,r:l.intersection(r), siblings2)
+      self.assertEqual(union,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_next_siblings_of_node(*nodes))
+            .all())))
+      self.assertEqual(union2,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_next_siblings_of_node(*nodes, include_self=True))
+            .all())))
+      self.assertEqual(intersection,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_next_siblings_of_node(*nodes, disjoint=False))
+            .all())))
+      self.assertEqual(intersection2,
+        set(map(
+          lambda node:node.name,
+          db.session.query(Named)
+            .filter(Named.tree.filter_next_siblings_of_node(*nodes, include_self=True, disjoint=False))
+            .all())))
+  def test_query_next_siblings_of_node(self):
+    "Verify the siblings of each node against expected values"
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(result['next-siblings'],
+        map(lambda x:x.name,
+          Named.tree.query_next_siblings_of_node(obj)
+            .order_by(Named.tree).all()))
+      self.assertEqual([obj.name] + result['next-siblings'],
+        map(lambda x:x.name,
+          Named.tree.query_next_siblings_of_node(obj, include_self=True)
+            .order_by(Named.tree).all()))
+    # permutations() is used instead of combinations() to ensure that the
+    # result is irrespective of the ordering of the nodes:
+    for results in permutations(self.result_static, 2):
+      names         = [x[0] for x in results]
+      nodes         = [db.session.query(Named).filter_by(name=x).one() for x in names]
+      siblings      = [set(x[1]['next-siblings']) for x in results]
+      siblings2     = map(lambda x:x[1].union(set([x[0]])), zip(names, siblings))
+      union         = reduce(lambda l,r:l.union(r),        siblings)
+      union2        = reduce(lambda l,r:l.union(r),        siblings2)
+      intersection  = reduce(lambda l,r:l.intersection(r), siblings)
+      intersection2 = reduce(lambda l,r:l.intersection(r), siblings2)
+      self.assertEqual(union,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_next_siblings_of_node(*nodes)
+            .all())))
+      self.assertEqual(union2,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_next_siblings_of_node(*nodes, include_self=True)
+            .all())))
+      self.assertEqual(intersection,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_next_siblings_of_node(*nodes, disjoint=False)
+            .all())))
+      self.assertEqual(intersection2,
+        set(map(
+          lambda node:node.name,
+          Named.tree.query_next_siblings_of_node(*nodes, include_self=True, disjoint=False)
+            .all())))
   def test_filter_ancestors_of_node(self):
     "Verify the ancestors of each node against expected values"
     for pattern in self.result_static:
@@ -1023,6 +1415,11 @@ class NamedTestCase(TreeTestMixin, TestCase):
           lambda node:node.name,
           Named.tree.query_leaf_nodes_of_node(*nodes, include_self=True, disjoint=False)
             .all())))
+  def test_is_root_node(self):
+    for pattern in self.result_static:
+      name, result = pattern
+      obj = db.session.query(Named).filter_by(name=name).one()
+      self.assertEqual(not bool(result['parent']), obj.tree.is_root_node)
 
 # ===----------------------------------------------------------------------===
 
@@ -1468,6 +1865,8 @@ class ExplicitMoveTestCase(NamedTestCase):
     ('action', {
       'ancestors': [],
       'parent': [],
+      'previous-siblings': [],
+      'next-siblings': ['rpg'],
       'children': ['platformer','shmup'],
       'descendants': ['platformer','platformer_2d','platformer_3d',
         'platformer_4d','shmup','shmup_vertical','shmup_horizontal'],
@@ -1476,60 +1875,80 @@ class ExplicitMoveTestCase(NamedTestCase):
     ('platformer', {
       'ancestors': ['action'],
       'parent': ['action'],
+      'previous-siblings': [],
+      'next-siblings': ['shmup'],
       'children': ['platformer_2d','platformer_3d','platformer_4d'],
       'descendants': ['platformer_2d','platformer_3d','platformer_4d'],
       'leaf-nodes': ['platformer_2d','platformer_3d','platformer_4d']}),
     ('platformer_2d', {
       'ancestors': ['action','platformer'],
       'parent': ['platformer'],
+      'previous-siblings': [],
+      'next-siblings': ['platformer_3d','platformer_4d'],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     ('platformer_3d', {
       'ancestors': ['action','platformer'],
       'parent': ['platformer'],
+      'previous-siblings': ['platformer_2d'],
+      'next-siblings': ['platformer_4d'],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     ('platformer_4d', {
       'ancestors': ['action','platformer'],
       'parent': ['platformer'],
+      'previous-siblings': ['platformer_2d','platformer_3d'],
+      'next-siblings': [],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     ('shmup', {
       'ancestors': ['action'],
       'parent': ['action'],
+      'previous-siblings': ['platformer'],
+      'next-siblings': [],
       'children': ['shmup_vertical','shmup_horizontal'],
       'descendants': ['shmup_vertical','shmup_horizontal'],
       'leaf-nodes': ['shmup_vertical','shmup_horizontal']}),
     ('shmup_vertical', {
       'ancestors': ['action','shmup'],
       'parent': ['shmup'],
+      'previous-siblings': [],
+      'next-siblings': ['shmup_horizontal'],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     ('shmup_horizontal', {
       'ancestors': ['action','shmup'],
       'parent': ['shmup'],
+      'previous-siblings': ['shmup_vertical'],
+      'next-siblings': [],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     ('rpg', {
       'ancestors': [],
       'parent': [],
+      'previous-siblings': ['action'],
+      'next-siblings': [],
       'children': ['arpg','trpg'],
       'descendants': ['arpg','trpg'],
       'leaf-nodes': ['arpg','trpg']}),
     ('arpg', {
       'ancestors': ['rpg'],
       'parent': ['rpg'],
+      'previous-siblings': [],
+      'next-siblings': ['trpg'],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     ('trpg', {
       'ancestors': ['rpg'],
       'parent': ['rpg'],
+      'previous-siblings': ['arpg'],
+      'next-siblings': [],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),

@@ -198,6 +198,48 @@ class TreeInstanceManager(TreeClassManager):
     "Get a filter condition for a node's parent."
     return self.filter_parent_of_node(self._get_obj())
 
+  def filter_siblings(self, include_self=False):
+    "Get a filter condition for a node's siblings."
+    return self.filter_siblings_of_node(self._get_obj(), include_self=include_self)
+
+  def query_siblings(self, session=None, include_self=False):
+    "Get a query containing a nodes siblings."
+    return self.query_siblings_of_node(self._get_obj(), session=session, include_self=include_self)
+
+  def filter_previous_siblings(self, include_self=False):
+    "Get a filter condition for the siblings of a node which occur prior to it in tree ordering."
+    return self.filter_previous_siblings_of_node(self._get_obj(), include_self=include_self)
+
+  def query_previous_siblings(self, session=None, include_self=False):
+    "Get a query containing the siblings of a node which occur prior to it in tree ordering."
+    return self.query_previous_siblings_of_node(self._get_obj(), session=session, include_self=include_self)
+
+  def filter_next_siblings(self, include_self=False):
+    "Get a filter condition for the siblings of a node which occur subsequent to it in tree ordering."
+    return self.filter_next_siblings_of_node(self._get_obj(), include_self=include_self)
+
+  def query_next_siblings(self, session=None, include_self=False):
+    "Get a query containing the siblings of a node which occur subsequent to it in tree ordering."
+    return self.query_next_siblings_of_node(self._get_obj(), session=session, include_self=include_self)
+
+  @property
+  def previous_sibling(self):
+    "Returns the previous sibling with respect to tree ordering, or `None`."
+    if self.is_root_node:
+      ordering = sqlalchemy.sql.expression.desc(self.tree_id_field)
+    else:
+      ordering = sqlalchemy.sql.expression.desc(self.left_field)
+    return self.query_previous_siblings().order_by(ordering).first()
+
+  @property
+  def next_sibling(self):
+    "Returns the next sibling with respect to tree ordering, or `None`."
+    if self.is_root_node:
+      ordering = sqlalchemy.sql.expression.asc(self.tree_id_field)
+    else:
+      ordering = sqlalchemy.sql.expression.asc(self.left_field)
+    return self.query_next_siblings().order_by(ordering).first()
+
   def filter_children(self):
     """The same as :meth:`filter_descendants` but filters direct children only
     and does not accept an :attr:`include_self` parameter."""
@@ -299,6 +341,11 @@ class TreeInstanceManager(TreeClassManager):
       which are themselves leaf nodes.
     """
     return self.query_leaf_nodes_of_node(self._get_obj(), session=session, include_self=include_self)
+
+  @property
+  def is_root_node(self):
+    "Returns `True` if the node has no parent."
+    return self.left == 1
 
   def _get_obj(self):
     "Dereference weakref and return node instance."

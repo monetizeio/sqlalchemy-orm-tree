@@ -301,6 +301,135 @@ class TreeClassManager(object):
     return session.query(self.node_class) \
                   .filter(self.filter_parent_of_node(*args, **kwargs))
 
+  def filter_siblings_of_node(self, *args, **kwargs):
+    "Returns a filter condition identifying siblings of passed-in nodes."
+    include_self = kwargs.pop('include_self', False) # Include self in results
+    disjoint     = kwargs.pop('disjoint',     True)  # Logical-AND vs. -OR for reduction
+    for extra in kwargs:
+      raise TypeError, u"unexpected keyword argument '%s'" % extra
+
+    def _filter_siblings_of_node_helper(node):
+      pk        = getattr(node, self.pk_field.name)
+      parent_id = getattr(node, self.parent_id_field.name)
+
+      # Restrict to siblings via the parent_id value:
+      filter_ = self.parent_id_field == parent_id
+
+      # Explicitly exclude node, if requested:
+      if not include_self:
+        filter_ &= self.pk_field != pk
+
+      # We're done!
+      return filter_
+
+    # Combine SQL expression clauses into a clause identifying the combined
+    # ancestors of each node in turn, according to the requested behavior in
+    # handling disjoint sets (logical-OR/union vs. logical-AND/intersection):
+    filters = map(_filter_siblings_of_node_helper, args)
+    if disjoint:
+      return reduce(lambda l,r: l | r, filters)
+    else:
+      return reduce(lambda l,r: l & r, filters)
+
+  def query_siblings_of_node(self, *args, **kwargs):
+    "Returns a query containing the siblings of passed-in nodes."
+    session = kwargs.pop('session', None)
+    if session is None:
+      session = self._get_session_from_args_or_self(*args)
+    return session.query(self.node_class) \
+                  .filter(self.filter_siblings_of_node(*args, **kwargs))
+
+  def filter_previous_siblings_of_node(self, *args, **kwargs):
+    "Returns a filter condition identifying siblings to the left of passed-in nodes."
+    include_self = kwargs.pop('include_self', False) # Include self in results
+    disjoint     = kwargs.pop('disjoint',     True)  # Logical-AND vs. -OR for reduction
+    for extra in kwargs:
+      raise TypeError, u"unexpected keyword argument '%s'" % extra
+
+    def _filter_previous_siblings_of_node_helper(node):
+      pk        = getattr(node, self.pk_field.name)
+      parent_id = getattr(node, self.parent_id_field.name)
+
+      # Restrict to siblings via the parent_id value:
+      filter_ = self.parent_id_field == parent_id
+
+      if parent_id is None:
+        # Restrict to the specified root node and those with lower `tree_id` values:
+        filter_ &= self.tree_id_field <= getattr(node, self.tree_id_field.name)
+      else:
+        # Restrict to the specified child node and those with lower `left` values:
+        filter_ &= self.left_field <= getattr(node, self.left_field.name)
+
+      # Explicitly exclude node, if requested:
+      if not include_self:
+        filter_ &= self.pk_field != pk
+
+      # We're done!
+      return filter_
+
+    # Combine SQL expression clauses into a clause identifying the combined
+    # ancestors of each node in turn, according to the requested behavior in
+    # handling disjoint sets (logical-OR/union vs. logical-AND/intersection):
+    filters = map(_filter_previous_siblings_of_node_helper, args)
+    if disjoint:
+      return reduce(lambda l,r: l | r, filters)
+    else:
+      return reduce(lambda l,r: l & r, filters)
+
+  def query_previous_siblings_of_node(self, *args, **kwargs):
+    "Returns a query containing siblings to the left of passed-in nodes."
+    session = kwargs.pop('session', None)
+    if session is None:
+      session = self._get_session_from_args_or_self(*args)
+    return session.query(self.node_class) \
+                  .filter(self.filter_previous_siblings_of_node(*args, **kwargs))
+
+  def filter_next_siblings_of_node(self, *args, **kwargs):
+    "Returns a filter condition identifying siblings to the right of passed-in nodes."
+    include_self = kwargs.pop('include_self', False) # Include self in results
+    disjoint     = kwargs.pop('disjoint',     True)  # Logical-AND vs. -OR for reduction
+    for extra in kwargs:
+      raise TypeError, u"unexpected keyword argument '%s'" % extra
+
+    def _filter_next_siblings_of_node_helper(node):
+      pk        = getattr(node, self.pk_field.name)
+      parent_id = getattr(node, self.parent_id_field.name)
+      left      = getattr(node, self.left_field.name)
+
+      # Restrict to siblings via the parent_id value:
+      filter_ = self.parent_id_field == parent_id
+
+      if parent_id is None:
+        # Restrict to the specified root node and those with higher `tree_id` values:
+        filter_ &= self.tree_id_field >= getattr(node, self.tree_id_field.name)
+      else:
+        # Restrict to the specified child node and those with higher `left` values:
+        filter_ &= self.left_field >= getattr(node, self.left_field.name)
+
+      # Explicitly exclude node, if requested:
+      if not include_self:
+        filter_ &= self.pk_field != pk
+
+      # We're done!
+      return filter_
+
+    # Combine SQL expression clauses into a clause identifying the combined
+    # ancestors of each node in turn, according to the requested behavior in
+    # handling disjoint sets (logical-OR/union vs. logical-AND/intersection):
+    filters = map(_filter_next_siblings_of_node_helper, args)
+    if disjoint:
+      return reduce(lambda l,r: l | r, filters)
+    else:
+      return reduce(lambda l,r: l & r, filters)
+
+  def query_next_siblings_of_node(self, *args, **kwargs):
+    "Returns a query containing siblings to the right of passed-in nodes."
+    session = kwargs.pop('session', None)
+    if session is None:
+      session = self._get_session_from_args_or_self(*args)
+    return session.query(self.node_class) \
+                  .filter(self.filter_next_siblings_of_node(*args, **kwargs))
+
   def filter_children_of_node(self, *args):
     "Returns a filter condition for the children of passed-in nodes."
     def _filter_children_of_node_helper(node):
