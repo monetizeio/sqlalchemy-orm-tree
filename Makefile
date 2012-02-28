@@ -69,7 +69,7 @@ debugcheck: ${PKG_ROOT}/.stamp-h
 	@echo >>.pytest.py "    exceptions.AssertionError.__init__(self, *args)"
 	@echo >>.pytest.py "    print 'Assertion failed, entering PDB...'"
 	@echo >>.pytest.py "    if hasattr(sys, '_getframe'):"
-	@echo >>.pytest.py "      ipdb.set_trace(sys._getframe().f_back.f_back.f_back.f_back)"
+	@echo >>.pytest.py "      ipdb.set_trace(sys._getframe().f_back.f_back.f_back)"
 	@echo >>.pytest.py "    else:"
 	@echo >>.pytest.py "      ipdb.set_trace()"
 	@echo >>.pytest.py "unittest2.TestCase.failureException = PDBAssertionError"
