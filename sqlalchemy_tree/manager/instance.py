@@ -186,13 +186,13 @@ class TreeInstanceManager(TreeClassManager):
     "Return the root node of the tree which includes this node."
     return self.query_root_node_of_node(self._get_obj()).one()
 
-  def filter_ancestors(self, and_self=False):
+  def filter_ancestors(self, include_self=False):
     "The same as :meth:`filter_descendants` but filters ancestor nodes."
-    return self.filter_ancestors_of_node(self._get_obj(), and_self=and_self)
+    return self.filter_ancestors_of_node(self._get_obj(), include_self=include_self)
 
-  def query_ancestors(self, session=None, and_self=False):
+  def query_ancestors(self, session=None, include_self=False):
     "The same as :meth:`query_descendants` but queries node's ancestors."
-    return self.query_ancestors_of_node(self._get_obj(), session=session, and_self=and_self)
+    return self.query_ancestors_of_node(self._get_obj(), session=session, include_self=include_self)
 
   def filter_parent(self):
     "Get a filter condition for a node's parent."
@@ -200,15 +200,15 @@ class TreeInstanceManager(TreeClassManager):
 
   def filter_children(self):
     """The same as :meth:`filter_descendants` but filters direct children only
-    and does not accept an :attr:`and_self` parameter."""
+    and does not accept an :attr:`include_self` parameter."""
     return self.filter_children_of_node(self._get_obj())
 
   def query_children(self, session=None):
     """The same as :meth:`query_descendants` but queries direct children only
-    and does not accept an :attr:`and_self` parameter."""
+    and does not accept an :attr:`include_self` parameter."""
     return self.query_children_of_node(self._get_obj(), session=session)
 
-  def filter_descendants(self, and_self=False):
+  def filter_descendants(self, include_self=False):
     """Get a filter condition for node's descendants.
 
     Requires that node has `tree_id`, `left`, `right` and `depth` values
@@ -225,15 +225,15 @@ class TreeInstanceManager(TreeClassManager):
     `filter_descendants`, don't use it for such purpose as there is a better
     way for such simple queries: :meth:`query_descendants`.
 
-    :param and_self:
+    :param include_self:
       `bool`, if set to `True`, include this node in the filter as well.
     :return:
       a filter clause applicable as argument for
       `sqlalchemy.orm.Query.filter()` and others.
     """
-    return self.filter_descendants_of_node(self._get_obj(), and_self=and_self)
+    return self.filter_descendants_of_node(self._get_obj(), include_self=include_self)
 
-  def query_descendants(self, session=None, and_self=False):
+  def query_descendants(self, session=None, include_self=False):
     """Get a query for node's descendants.
 
     Requires that node is in “persistent” state or in “pending” state in
@@ -244,12 +244,12 @@ class TreeInstanceManager(TreeClassManager):
       node is in “detached” state and :attr:`session` is not provided, query
       will be detached too (will require setting `session` attribute to
       execute).
-    :param and_self:
+    :param include_self:
       `bool`, if set to `True` self node will be selected by query.
     :return:
       a `sqlalchemy.orm.Query` object which contains only node's descendants.
     """
-    return self.query_descendants_of_node(self._get_obj(), session=session, and_self=and_self)
+    return self.query_descendants_of_node(self._get_obj(), session=session, include_self=include_self)
 
   def get_descendant_count(self):
     "Returns the number of descendants this node has."
@@ -264,7 +264,7 @@ class TreeInstanceManager(TreeClassManager):
 
     return (right - left - 1) / 2
 
-  def filter_leaf_nodes(self, or_self=False):
+  def filter_leaf_nodes(self, include_self=False):
     """Creates a filter containing leaf nodes of this node instance.
 
     Requires that node has `tree_id`, `left`, `right` and `depth` values
@@ -272,13 +272,13 @@ class TreeInstanceManager(TreeClassManager):
     is in “detached” state or it is in “pending” state in `autoflush`-enabled
     session).
 
-    :param or_self:
+    :param include_self:
       `bool`, if set to `True`, the filter will also include this node (if it
       is a leaf node).
     """
-    return self.filter_leaf_nodes_of_node(self._get_obj(), or_self=or_self)
+    return self.filter_leaf_nodes_of_node(self._get_obj(), include_self=include_self)
 
-  def query_leaf_nodes(self, session=None, or_self=False):
+  def query_leaf_nodes(self, session=None, include_self=False):
     """Returns a query containing leaf nodes of this node instance.
 
     Requires that node has `tree_id`, `left`, `right` and `depth` values
@@ -291,14 +291,14 @@ class TreeInstanceManager(TreeClassManager):
       node is in “detached” state and :attr:`session` is not provided, query
       will be detached too (will require setting `session` attribute to
       execute).
-    :param or_self:
+    :param include_self:
       `bool`, if set to `True`, the filter will also include this node (if it
       is a leaf node).
     :return:
       a `sqlalchemy.orm.Query` object which contains only node's descendants
       which are themselves leaf nodes.
     """
-    return self.query_leaf_nodes_of_node(self._get_obj(), session=session, or_self=or_self)
+    return self.query_leaf_nodes_of_node(self._get_obj(), session=session, include_self=include_self)
 
   def _get_obj(self):
     "Dereference weakref and return node instance."

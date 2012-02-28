@@ -539,7 +539,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(result['ancestors'] + [obj.name],
         map(lambda x:x.name,
           db.session.query(Named)
-            .filter(obj.tree.filter_ancestors(and_self=True))
+            .filter(obj.tree.filter_ancestors(include_self=True))
             .order_by(Named.tree).all()))
   def test_query_ancestors(self):
     "Verify the ancestors of each node against expected values"
@@ -551,7 +551,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
             obj.tree.query_ancestors().order_by(Named.tree).all()))
       self.assertEqual(result['ancestors'] + [obj.name],
         map(lambda x:x.name,
-            obj.tree.query_ancestors(and_self=True).order_by(Named.tree).all()))
+            obj.tree.query_ancestors(include_self=True).order_by(Named.tree).all()))
   def test_filter_parent(self):
     "Verify the parent of each node against the expected value"
     for pattern in self.result_static:
@@ -589,7 +589,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(result['ancestors'] + [obj.name],
         map(lambda x:x.name,
           db.session.query(Named)
-            .filter(Named.tree.filter_ancestors_of_node(obj, and_self=True))
+            .filter(Named.tree.filter_ancestors_of_node(obj, include_self=True))
             .order_by(Named.tree).all()))
     # permutations() is used instead of combinations() to ensure that the
     # result is irrespective of the ordering of the nodes:
@@ -612,7 +612,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
         set(map(
           lambda node:node.name,
           db.session.query(Named)
-            .filter(Named.tree.filter_ancestors_of_node(*nodes, and_self=True))
+            .filter(Named.tree.filter_ancestors_of_node(*nodes, include_self=True))
             .all())))
       self.assertEqual(intersection,
         set(map(
@@ -624,7 +624,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
         set(map(
           lambda node:node.name,
           db.session.query(Named)
-            .filter(Named.tree.filter_ancestors_of_node(*nodes, and_self=True, disjoint=False))
+            .filter(Named.tree.filter_ancestors_of_node(*nodes, include_self=True, disjoint=False))
             .all())))
   def test_query_ancestors_of_node(self):
     "Verify the ancestors of each node against expected values"
@@ -637,7 +637,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
             .order_by(Named.tree).all()))
       self.assertEqual(result['ancestors'] + [obj.name],
         map(lambda x:x.name,
-          Named.tree.query_ancestors_of_node(obj, and_self=True)
+          Named.tree.query_ancestors_of_node(obj, include_self=True)
             .order_by(Named.tree).all()))
     # permutations() is used instead of combinations() to ensure that the
     # result is irrespective of the ordering of the nodes:
@@ -658,7 +658,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(union2,
         set(map(
           lambda node:node.name,
-          Named.tree.query_ancestors_of_node(*nodes, and_self=True)
+          Named.tree.query_ancestors_of_node(*nodes, include_self=True)
             .all())))
       self.assertEqual(intersection,
         set(map(
@@ -668,7 +668,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(intersection2,
         set(map(
           lambda node:node.name,
-          Named.tree.query_ancestors_of_node(*nodes, and_self=True, disjoint=False)
+          Named.tree.query_ancestors_of_node(*nodes, include_self=True, disjoint=False)
             .all())))
   def test_filter_children(self):
     "Verify the children of each node against expected values"
@@ -745,7 +745,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual([obj.name] + result['descendants'],
         map(lambda x:x.name,
           db.session.query(Named)
-            .filter(obj.tree.filter_descendants(and_self=True))
+            .filter(obj.tree.filter_descendants(include_self=True))
             .order_by(Named.tree).all()))
   def test_query_descendants(self):
     "Verify the descendants of each node against expected values"
@@ -757,7 +757,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
             obj.tree.query_descendants().order_by(Named.tree).all()))
       self.assertEqual([obj.name] + result['descendants'],
         map(lambda x:x.name,
-            obj.tree.query_descendants(and_self=True).order_by(Named.tree).all()))
+            obj.tree.query_descendants(include_self=True).order_by(Named.tree).all()))
   def test_filter_descendants_of_node(self):
     "Verify the descendants of each node against expected values"
     for pattern in self.result_static:
@@ -771,7 +771,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual([obj.name] + result['descendants'],
         map(lambda x:x.name,
           db.session.query(Named)
-            .filter(Named.tree.filter_descendants_of_node(obj, and_self=True))
+            .filter(Named.tree.filter_descendants_of_node(obj, include_self=True))
             .order_by(Named.tree).all()))
     # permutations() is used instead of combinations() to ensure that the
     # result is irrespective of the ordering of the nodes:
@@ -794,7 +794,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
         set(map(
           lambda node:node.name,
           db.session.query(Named)
-            .filter(Named.tree.filter_descendants_of_node(*nodes, and_self=True))
+            .filter(Named.tree.filter_descendants_of_node(*nodes, include_self=True))
             .all())))
       self.assertEqual(intersection,
         set(map(
@@ -806,7 +806,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
         set(map(
           lambda node:node.name,
           db.session.query(Named)
-            .filter(Named.tree.filter_descendants_of_node(*nodes, and_self=True, disjoint=False))
+            .filter(Named.tree.filter_descendants_of_node(*nodes, include_self=True, disjoint=False))
             .all())))
   def test_query_descendants_of_node(self):
     "Verify the descendants of each node against expected values"
@@ -819,7 +819,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
             .order_by(Named.tree).all()))
       self.assertEqual([obj.name] + result['descendants'],
         map(lambda x:x.name,
-          Named.tree.query_descendants_of_node(obj, and_self=True)
+          Named.tree.query_descendants_of_node(obj, include_self=True)
             .order_by(Named.tree).all()))
     # permutations() is used instead of combinations() to ensure that the
     # result is irrespective of the ordering of the nodes:
@@ -840,7 +840,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(union2,
         set(map(
           lambda node:node.name,
-          Named.tree.query_descendants_of_node(*nodes, and_self=True)
+          Named.tree.query_descendants_of_node(*nodes, include_self=True)
             .all())))
       self.assertEqual(intersection,
         set(map(
@@ -850,7 +850,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(intersection2,
         set(map(
           lambda node:node.name,
-          Named.tree.query_descendants_of_node(*nodes, and_self=True, disjoint=False)
+          Named.tree.query_descendants_of_node(*nodes, include_self=True, disjoint=False)
             .all())))
   def get_descendant_count(self):
     "Verify the number of descendants of each node against the expected count"
@@ -875,7 +875,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(expected + result['leaf-nodes'],
         map(lambda x:x.name,
           db.session.query(Named)
-            .filter(obj.tree.filter_leaf_nodes(or_self=True))
+            .filter(obj.tree.filter_leaf_nodes(include_self=True))
             .order_by(Named.tree).all()))
     expected = set(map(
       lambda x: x[0],
@@ -899,7 +899,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
         expected = [obj.name]
       self.assertEqual(expected + result['leaf-nodes'],
         map(lambda x:x.name,
-            obj.tree.query_leaf_nodes(or_self=True).order_by(Named.tree).all()))
+            obj.tree.query_leaf_nodes(include_self=True).order_by(Named.tree).all()))
     expected = set(map(
       lambda x: x[0],
       filter(lambda x: not x[1]['descendants'], self.result_static)))
@@ -942,7 +942,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(result['leaf-nodes'] or [obj.name],
         map(lambda x:x.name,
           db.session.query(Named)
-            .filter(Named.tree.filter_leaf_nodes_of_node(obj, or_self=True))
+            .filter(Named.tree.filter_leaf_nodes_of_node(obj, include_self=True))
             .order_by(Named.tree).all()))
     # permutations() is used instead of combinations() to ensure that the
     # result is irrespective of the ordering of the nodes:
@@ -965,7 +965,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
         set(map(
           lambda node:node.name,
           db.session.query(Named)
-            .filter(Named.tree.filter_leaf_nodes_of_node(*nodes, or_self=True))
+            .filter(Named.tree.filter_leaf_nodes_of_node(*nodes, include_self=True))
             .all())))
       self.assertEqual(intersection,
         set(map(
@@ -977,7 +977,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
         set(map(
           lambda node:node.name,
           db.session.query(Named)
-            .filter(Named.tree.filter_leaf_nodes_of_node(*nodes, or_self=True, disjoint=False))
+            .filter(Named.tree.filter_leaf_nodes_of_node(*nodes, include_self=True, disjoint=False))
             .all())))
   def test_query_leaf_nodes_of_node(self):
     "Verify the leaf nodes of each node against expected values"
@@ -990,7 +990,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
             .order_by(Named.tree).all()))
       self.assertEqual(result['leaf-nodes'] or [obj.name],
         map(lambda x:x.name,
-          Named.tree.query_leaf_nodes_of_node(obj, or_self=True)
+          Named.tree.query_leaf_nodes_of_node(obj, include_self=True)
             .order_by(Named.tree).all()))
     # permutations() is used instead of combinations() to ensure that the
     # result is irrespective of the ordering of the nodes:
@@ -1011,7 +1011,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(union2,
         set(map(
           lambda node:node.name,
-          Named.tree.query_leaf_nodes_of_node(*nodes, or_self=True)
+          Named.tree.query_leaf_nodes_of_node(*nodes, include_self=True)
             .all())))
       self.assertEqual(intersection,
         set(map(
@@ -1021,7 +1021,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
       self.assertEqual(intersection2,
         set(map(
           lambda node:node.name,
-          Named.tree.query_leaf_nodes_of_node(*nodes, or_self=True, disjoint=False)
+          Named.tree.query_leaf_nodes_of_node(*nodes, include_self=True, disjoint=False)
             .all())))
 
 # ===----------------------------------------------------------------------===

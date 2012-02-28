@@ -241,9 +241,9 @@ class TreeClassManager(object):
 
   def filter_ancestors_of_node(self, *args, **kwargs):
     "Returns a filter condition for the ancestors of passed-in nodes."
-    options  = self._tree_options
-    and_self = kwargs.pop('and_self', False) # Include self in results
-    disjoint = kwargs.pop('disjoint', True)  # Logical-AND vs. -OR for reduction
+    options      = self._tree_options
+    include_self = kwargs.pop('include_self', False) # Include self in results
+    disjoint     = kwargs.pop('disjoint',     True)  # Logical-AND vs. -OR for reduction
     for extra in kwargs:
       raise TypeError, u"unexpected keyword argument '%s'" % extra
 
@@ -262,7 +262,7 @@ class TreeClassManager(object):
                  getattr(node,    self.pk_field.name)
 
       # Explicitly exclude node, if requested:
-      if not and_self:
+      if not include_self:
         filter_ &= self.pk_field != getattr(node, self.pk_field.name)
 
       # We're done!
@@ -332,8 +332,8 @@ class TreeClassManager(object):
 
   def filter_descendants_of_node(self, *args, **kwargs):
     "Returns a filter condition for the descendants of passed-in nodes."
-    and_self = kwargs.pop('and_self', False) # Include self in results
-    disjoint = kwargs.pop('disjoint', True)  # Logical-AND vs. -OR for reduction
+    include_self = kwargs.pop('include_self', False) # Include self in results
+    disjoint     = kwargs.pop('disjoint',     True)  # Logical-AND vs. -OR for reduction
     for extra in kwargs:
       raise TypeError, u"unexpected keyword argument '%s'" % extra
 
@@ -345,7 +345,7 @@ class TreeClassManager(object):
       # If the caller requests the specified node to be included, this is most
       # easily accomplished by not incrementing left by one, so that the node
       # is now included in the resulting interval:
-      left = and_self and left or left + 1
+      left = include_self and left or left + 1
 
       # Restrict ourselves to just those nodes within the same tree:
       filter_ = self.tree_id_field == tree_id
@@ -411,8 +411,8 @@ class TreeClassManager(object):
   def filter_leaf_nodes_of_node(self, *args, **kwargs):
     """Get a filter condition returning the leaf nodes of the descendants of
     the passed-in nodes."""
-    or_self  = kwargs.pop('or_self', False) # Include self in results
-    disjoint = kwargs.pop('disjoint', True) # Logical-AND vs. -OR for reduction
+    include_self = kwargs.pop('include_self', False) # Include self in results
+    disjoint     = kwargs.pop('disjoint',     True)  # Logical-AND vs. -OR for reduction
     for extra in kwargs:
       raise TypeError, u"unexpected keyword argument '%s'" % extra
 
@@ -424,7 +424,7 @@ class TreeClassManager(object):
       # If the caller requests the specified node to be included, this is most
       # easily accomplished by not incrementing left by one, so that the node
       # is now included in the resulting interval:
-      left = or_self and left or left + 1
+      left = include_self and left or left + 1
 
       # Restrict ourselves to just those nodes within the same tree:
       filter_ = self.tree_id_field == tree_id
