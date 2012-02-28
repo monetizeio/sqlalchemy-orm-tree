@@ -273,9 +273,9 @@ class TreeClassManager(object):
     # handling disjoint sets (logical-OR/union vs. logical-AND/intersection):
     filters = map(_filter_ancestors_of_node_helper, args)
     if disjoint:
-      return reduce(lambda l,r: l | r, filters, sqlalchemy.sql.expression.false())
+      return reduce(lambda l,r: l | r, filters)
     else:
-      return reduce(lambda l,r: l & r, filters, sqlalchemy.sql.expression.true())
+      return reduce(lambda l,r: l & r, filters)
 
   def query_ancestors_of_node(self, *args, **kwargs):
     "Returns a query containing the ancestors of passed-in nodes."
@@ -364,9 +364,9 @@ class TreeClassManager(object):
     # handling disjoint sets (logical-OR/union vs. logical-AND/intersection):
     filters = map(_filter_descendants_of_node_helper, args)
     if disjoint:
-      return reduce(lambda l,r: l | r, filters, sqlalchemy.sql.expression.false())
+      return reduce(lambda l,r: l | r, filters)
     else:
-      return reduce(lambda l,r: l & r, filters, sqlalchemy.sql.expression.true())
+      return reduce(lambda l,r: l & r, filters)
 
   def query_descendants_of_node(self, *args, **kwargs):
     "Returns a query containing the descendants of passed-in nodes."
@@ -448,9 +448,9 @@ class TreeClassManager(object):
     # handling disjoint sets (logical-OR/union vs. logical-AND/intersection):
     filters = map(_filter_leaf_nodes_of_node_helper, args)
     if disjoint:
-      return reduce(lambda l,r: l | r, filters, sqlalchemy.sql.expression.false())
+      return reduce(lambda l,r: l | r, filters)
     else:
-      return reduce(lambda l,r: l & r, filters, sqlalchemy.sql.expression.true())
+      return reduce(lambda l,r: l & r, filters)
 
   def query_leaf_nodes_of_node(self, *args, **kwargs):
     """Returns the leaf nodes of the descendants of the passed-in nodes, using
