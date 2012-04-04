@@ -72,16 +72,17 @@ for dirpath, dirnames, filenames in os.walk('sqlalchemy_tree'):
     for f in filenames:
       data_files.append(os.path.join(prefix, f))
 
+version = get_version().replace(' ', '-')
 setup(name='SQLAlchemy-ORM-tree',
-  version=get_version().replace(' ', '-'),
+  version=version,
   description='An implementation for SQLAlchemy-based applications of the nested-sets/modified-pre-order-tree-traversal technique for storing hierarchical data in a relational database.',
   install_requires=['SQLAlchemy>=0.7'],
   author='RokuSigma Inc. and contributors',
-  author_email='sqlalchemy-orm-tree@roku-sigma.com',
+  author_email='sqlalchemy-orm-tree@monetize.io',
   maintainer='Mark Friedenbach',
-  maintainer_email='mark@roku-sigma.com',
-  url='http://www.github.com/rokusigma/sqlalchemy-orm-tree/',
-  download_url='http://github.com/rokusigma/sqlalchemy-orm-tree/tarball/master',
+  maintainer_email='mark@monetize.io',
+  url='http://www.github.com/monetizeio/sqlalchemy-orm-tree/',
+  download_url='http://pypi.python.org/packages/source/S/SQLAlchemy-ORM-tree/SQLAlchemy-ORM-tree-%s.tar.gz' % version,
   package_dir={'sqlalchemy_tree': 'sqlalchemy_tree'},
   packages=packages,
   package_data={'sqlalchemy_tree': data_files},
