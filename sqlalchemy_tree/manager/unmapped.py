@@ -114,10 +114,10 @@ class TreeManager(object):
   Basic usage is simple::
 
     class Node(object):
-      mp = sqlalchemy_tree.TreeManager(node_table)
+      tree = sqlalchemy_tree.TreeManager(node_table)
 
     # After Node is mapped:
-    Node.mp.register()
+    Node.tree.register()
 
   Now there is an ability to get an instance manager or class manager via the
   property `'mp'` depending on the way in which it is accessed. `Node.mp` will
@@ -153,7 +153,7 @@ class TreeManager(object):
     the same as for :attr:`tree_id_field`, except that the type of this column
     should be :class:`TreeLeftField`.
 
-  :param left_field='tree_right':
+  :param right_field='tree_right':
     the same as for :attr:`tree_id_field`, except that the type of this column
     should be :class:`TreeRightField`.
 
