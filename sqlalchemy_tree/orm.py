@@ -147,11 +147,11 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
         .where(options.pk_field==node_pk)
       ).fetchone()
 
-      setattr(node, options.parent_id_field.name, parent_id)
-      setattr(node, options.tree_id_field.name,   tree_id)
-      setattr(node, options.left_field.name,      left)
-      setattr(node, options.right_field.name,     right)
-      setattr(node, options.depth_field.name,     depth)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.parent_id_field.name, parent_id)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.tree_id_field.name,   tree_id)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.left_field.name,      left)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.right_field.name,     right)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.depth_field.name,     depth)
 
   def before_insert(self, mapper, connection, node):
     """Just prior to a previously non-existent node being inserted into the
@@ -191,11 +191,11 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
       # tree. This requires just one query (to find the id of the new tree)
       # and no row updates.
       tree_id = self._get_next_tree_id(connection, session_objs)
-      setattr(node, options.parent_id_field.name, None)
-      setattr(node, options.tree_id_field.name,   tree_id)
-      setattr(node, options.left_field.name,      1)
-      setattr(node, options.right_field.name,     2)
-      setattr(node, options.depth_field.name,     0)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.parent_id_field.name, None)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.tree_id_field.name,   tree_id)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.left_field.name,      1)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.right_field.name,     2)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.depth_field.name,     0)
 
     elif (getattr(target, options.left_field.name)==1 and
           position in [options.class_manager.POSITION_LEFT,
@@ -211,19 +211,19 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
         node_tree_id   = target_tree_id + 1
       self._manage_tree_gap(connection, session_objs, target_tree_id, 1)
 
-      setattr(node, options.parent_id_field.name, None)
-      setattr(node, options.tree_id_field.name,   node_tree_id)
-      setattr(node, options.left_field.name,      1)
-      setattr(node, options.right_field.name,     2)
-      setattr(node, options.depth_field.name,     0)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.parent_id_field.name, None)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.tree_id_field.name,   node_tree_id)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.left_field.name,      1)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.right_field.name,     2)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.depth_field.name,     0)
 
     else:
       # Otherwise our business is only slightly more messy. We need to
       # allocate space in the tree structure for our new node by shifting all
       # nodes to the right up by two spaces.
-      setattr(node, options.left_field.name,  0)
-      setattr(node, options.right_field.name, 1)
-      setattr(node, options.depth_field.name, 0)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.left_field.name,  0)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.right_field.name, 1)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.depth_field.name, 0)
 
       gap_target, depth, left, parent_id, right_shift = \
         self._calculate_inter_tree_move_values(node, target, position)
@@ -239,11 +239,11 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
 
       self._manage_position_gap(connection, session_objs, tree_id, gap_target, right_shift)
 
-      setattr(node, options.parent_id_field.name, parent_id)
-      setattr(node, options.left_field.name,      left)
-      setattr(node, options.right_field.name,     left + 1)
-      setattr(node, options.depth_field.name,     depth)
-      setattr(node, options.tree_id_field.name,   tree_id)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.parent_id_field.name, parent_id)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.left_field.name,      left)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.right_field.name,     left + 1)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.depth_field.name,     depth)
+      sqlalchemy.orm.attributes.set_committed_value(node, options.tree_id_field.name,   tree_id)
 
   def after_insert(self, mapper, connection, node):
     "Just after a previously non-existent node is inserted into the tree."
@@ -268,8 +268,8 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
         .where(options.parent_id_field == pk)
     )
     for obj in session_objs:
-      if getattr(obj,  options.parent_id_field.name) == pk:
-        setattr(obj, options.parent_id_field.name, None)
+      if getattr(obj, options.parent_id_field.name) == pk:
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.parent_id_field.name, None)
 
   def after_delete(self, mapper, connection, node):
     "Just after an existent node is updated."
@@ -333,10 +333,10 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
           obj_depth   = getattr(obj, options.depth_field.name)
           if obj_left >= child_left and obj_right <= child_right:
             # Assign the new tree parameters:
-            setattr(obj, options.tree_id_field.name, next_tree_id)
-            setattr(obj, options.left_field.name,    obj_left  - shift)
-            setattr(obj, options.right_field.name,   obj_right - shift)
-            setattr(obj, options.depth_field.name,   obj_depth - 1)
+            sqlalchemy.orm.attributes.set_committed_value(obj, options.tree_id_field.name, next_tree_id)
+            sqlalchemy.orm.attributes.set_committed_value(obj, options.left_field.name,    obj_left  - shift)
+            sqlalchemy.orm.attributes.set_committed_value(obj, options.right_field.name,   obj_right - shift)
+            sqlalchemy.orm.attributes.set_committed_value(obj, options.depth_field.name,   obj_depth - 1)
         # Increment the tree_id for the next time through the loop:
         next_tree_id += 1
       # Handle new nodes which are to be promoted to root themselves:
@@ -351,10 +351,10 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
           # to be adjusted so that the new root node starts from 1.
           shift = obj_left - 1
           # Assign the new tree parameters:
-          setattr(obj, options.tree_id_field.name, next_tree_id)
-          setattr(obj, options.left_field.name,    obj_left  - shift)
-          setattr(obj, options.right_field.name,   obj_right - shift)
-          setattr(obj, options.depth_field.name,   obj_depth - 1)
+          sqlalchemy.orm.attributes.set_committed_value(obj, options.tree_id_field.name, next_tree_id)
+          sqlalchemy.orm.attributes.set_committed_value(obj, options.left_field.name,    obj_left  - shift)
+          sqlalchemy.orm.attributes.set_committed_value(obj, options.right_field.name,   obj_right - shift)
+          sqlalchemy.orm.attributes.set_committed_value(obj, options.depth_field.name,   obj_depth - 1)
           # Increment the tree_id for the next time through the loop:
           next_tree_id += 1
 
@@ -408,15 +408,15 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
         obj_depth   = getattr(obj, options.depth_field.name)
         if   (obj_left   > left  and
               obj_left   < right and
-              obj_depth == depth+1):  setattr(obj, options.parent_id_field.name, parent_id)
+              obj_depth == depth+1):  sqlalchemy.orm.attributes.set_committed_value(obj, options.parent_id_field.name, parent_id)
         if   (obj_left   > left  and
-              obj_left   < right):    setattr(obj, options.left_field.name,      obj_left  - 1)
-        elif (obj_left   > right):    setattr(obj, options.left_field.name,      obj_left  - 2)
+              obj_left   < right):    sqlalchemy.orm.attributes.set_committed_value(obj, options.left_field.name,      obj_left  - 1)
+        elif (obj_left   > right):    sqlalchemy.orm.attributes.set_committed_value(obj, options.left_field.name,      obj_left  - 2)
         if   (obj_right  > left  and
-              obj_right  < right):    setattr(obj, options.right_field.name,     obj_right - 1)
-        elif (obj_right  > right):    setattr(obj, options.right_field.name,     obj_right - 2)
+              obj_right  < right):    sqlalchemy.orm.attributes.set_committed_value(obj, options.right_field.name,     obj_right - 1)
+        elif (obj_right  > right):    sqlalchemy.orm.attributes.set_committed_value(obj, options.right_field.name,     obj_right - 2)
         if   (obj_left   > left  and
-              obj_left   < right):    setattr(obj, options.depth_field.name,     obj_depth - 1)
+              obj_left   < right):    sqlalchemy.orm.attributes.set_committed_value(obj, options.depth_field.name,     obj_depth - 1)
 
   def before_update(self, mapper, connection, node):
     """Called just prior to an existent node being updated.
@@ -506,7 +506,7 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
     for obj in session_objs:
       obj_tree_id = getattr(obj, options.tree_id_field.name)
       if obj_tree_id > target_tree_id:
-        setattr(obj, options.tree_id_field.name, obj_tree_id + size)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.tree_id_field.name, obj_tree_id + size)
 
   def _manage_position_gap(self, connection, session_objs, tree_id, target, size):
     """Manages spaces in the tree identified by ``tree_id`` by changing the
@@ -534,9 +534,9 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
       obj_left    = getattr(obj, options.left_field.name)
       obj_right   = getattr(obj, options.right_field.name)
       if obj_left  > target:
-        setattr(obj, options.left_field.name,  obj_left  + size)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.left_field.name,  obj_left  + size)
       if obj_right > target:
-        setattr(obj, options.right_field.name, obj_right + size)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.right_field.name, obj_right + size)
 
   def _calculate_inter_tree_move_values(self, node, target, position):
     """Calculates values required when moving ``node`` relative to ``target``
@@ -627,16 +627,16 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
       obj_right   = getattr(obj, options.right_field.name)
       obj_depth   = getattr(obj, options.depth_field.name)
       if   obj_left >= left and obj_left <= right:
-        setattr(obj, options.tree_id_field.name, new_tree_id)
-        setattr(obj, options.left_field.name,    obj_left  + left_right_change)
-        setattr(obj, options.depth_field.name,   obj_depth + depth_change)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.tree_id_field.name, new_tree_id)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.left_field.name,    obj_left  + left_right_change)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.depth_field.name,   obj_depth + depth_change)
       elif obj_left > right:
-        setattr(obj, options.left_field.name,    obj_left  - gap_size)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.left_field.name,    obj_left  - gap_size)
       if   obj_right >= left and obj_right <= right:
-        setattr(obj, options.right_field.name,   obj_right + left_right_change)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.right_field.name,   obj_right + left_right_change)
       elif obj_right > right:
-        setattr(obj, options.right_field.name,   obj_right - gap_size)
-    setattr(node, options.parent_id_field.name,  parent_id)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.right_field.name,   obj_right - gap_size)
+    sqlalchemy.orm.attributes.set_committed_value(node, options.parent_id_field.name,  parent_id)
 
   def _make_child_into_root_node(self, connection, session_objs, node,
     new_tree_id=None):
@@ -728,9 +728,9 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
         obj_tree_id = getattr(obj, options.tree_id_field.name)
         if obj_tree_id >= lower_bound and obj_tree_id <= upper_bound:
           if obj_tree_id == tree_id:
-            setattr(obj, options.tree_id_field.name, new_tree_id)
+            sqlalchemy.orm.attributes.set_committed_value(obj, options.tree_id_field.name, new_tree_id)
           else:
-            setattr(obj, options.tree_id_field.name, obj_tree_id + shift)
+            sqlalchemy.orm.attributes.set_committed_value(obj, options.tree_id_field.name, obj_tree_id + shift)
 
   def _move_root_node(self, connection, session_objs, node, target, position):
     """Moves root node``node`` to a different tree, inserting it relative to
@@ -778,13 +778,13 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
       obj_right   = getattr(obj, options.right_field.name)
       obj_depth   = getattr(obj, options.depth_field.name)
       if obj_left >= left and obj_left <= right:
-        setattr(obj, options.tree_id_field.name, new_tree_id)
-        setattr(obj, options.left_field.name,    obj_left  + left_right_change)
-        setattr(obj, options.right_field.name,   obj_right + left_right_change)
-        setattr(obj, options.depth_field.name,   obj_depth + depth_change)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.tree_id_field.name, new_tree_id)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.left_field.name,    obj_left  + left_right_change)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.right_field.name,   obj_right + left_right_change)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.depth_field.name,   obj_depth + depth_change)
     # Update the former root node to be consistent with the updated
     # tree in the database:
-    setattr(node, options.parent_id_field.name, parent_id)
+    sqlalchemy.orm.attributes.set_committed_value(node, options.parent_id_field.name, parent_id)
 
     # Remove the gap previously occupied by the tree
     self._manage_tree_gap(connection, session_objs, tree_id - 1, -1)
@@ -921,16 +921,16 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
       obj_right   = getattr(obj, options.right_field.name)
       obj_depth   = getattr(obj, options.depth_field.name)
       if   obj_left  >= left          and obj_left  <= right:
-        setattr(obj, options.left_field.name,  obj_left  + left_right_change)
-        setattr(obj, options.depth_field.name, obj_depth + depth_change)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.left_field.name,  obj_left  + left_right_change)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.depth_field.name, obj_depth + depth_change)
       elif obj_left  >= left_boundary and obj_left  <= right_boundary:
-        setattr(obj, options.left_field.name,  obj_left  + gap_size)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.left_field.name,  obj_left  + gap_size)
       if   obj_right >= left          and obj_right <= right:
-        setattr(obj, options.right_field.name, obj_right + left_right_change)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.right_field.name, obj_right + left_right_change)
       elif obj_right >= left_boundary and obj_right <= right_boundary:
-        setattr(obj, options.right_field.name, obj_right + gap_size)
-    # Update the node object to be consistent database.
-    setattr(node, options.parent_id_field.name, parent_id)
+        sqlalchemy.orm.attributes.set_committed_value(obj, options.right_field.name, obj_right + gap_size)
+    # Update the node object to be consistent with database.
+    sqlalchemy.orm.attributes.set_committed_value(node, options.parent_id_field.name, parent_id)
 
 # ===----------------------------------------------------------------------===
 
