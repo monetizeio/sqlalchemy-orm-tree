@@ -4,4 +4,5 @@
 .pkg
 build
 .coverage
+MANIFEST
 dist
