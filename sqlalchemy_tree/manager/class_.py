@@ -203,8 +203,10 @@ class TreeClassManager(object):
   def filter_root_node_by_tree_id(self, *args):
     """Get a filter condition returning root nodes of the tree specified
     through the positional arguments (interpreted as tree ids)."""
-    return self.filter_root_nodes() & \
-           self.tree_id_field.in_(args)
+    if args:
+      return self.filter_root_nodes() & self.tree_id_field.in_(args)
+    else:
+      return self.pk_field != self.pk_field
 
   def query_root_node_by_tree_id(self, *args, **kwargs):
     """Returns the root nodes of the trees specified through the positional
@@ -223,9 +225,11 @@ class TreeClassManager(object):
   def filter_root_node_of_node(self, *args):
     """Get a filter condition returning the root nodes of the trees which
     include the passed-in nodes."""
-    return self.filter_root_nodes() & \
-           self.tree_id_field.in_(
-             set(map(lambda n:getattr(n, self.tree_id_field.name), args)))
+    tree_ids = set(map(lambda arg:getattr(arg, self.tree_id_field.name), args))
+    if tree_ids:
+        return self.filter_root_nodes() & self.tree_id_field.in_(tree_ids)
+    else:
+        return self.pk_field != self.pk_field
 
   def query_root_node_of_node(self, *args, **kwargs):
     """Returns the root nodes of the trees which contain the passed in nodes,
@@ -291,7 +295,10 @@ class TreeClassManager(object):
       lambda parent_id:parent_id is not None,
       map(
         lambda node:getattr(node, self.parent_id_field.name), args))
-    return self.pk_field.in_(parent_ids)
+    if parent_ids:
+        return self.pk_field.in_(parent_ids)
+    else:
+        return self.pk_field != self.pk_field
 
   def query_parent_of_node(self, *args, **kwargs):
     "Returns a query containing the parents of passed-in nodes."
@@ -522,8 +529,10 @@ class TreeClassManager(object):
   def filter_leaf_nodes_by_tree_id(self, *args):
     """Creates a filter condition containing all leaf nodes of the tree(s)
     specified through the positional arguments (interpreted as tree ids)."""
-    return self.filter_leaf_nodes() & \
-           self.tree_id_field.in_(args)
+    if args:
+        return self.filter_leaf_nodes() & self.tree_id_field.in_(args)
+    else:
+        return self.pk_field != self.pk_field
 
   def query_leaf_nodes_by_tree_id(self, *args, **kwargs):
     """Returns a query containing all leaf nodes of the tree(s) specified
