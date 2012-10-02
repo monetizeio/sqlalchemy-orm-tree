@@ -243,30 +243,30 @@ class NamedTestCase(TreeTestMixin, TestCase):
       'ancestors': [],
       'parent': [],
       'previous-siblings': [],
-      'next-siblings': ['root2','root3'],
-      'children': ['child11','child12','child13'],
-      'descendants': ['child11','child12','child13'],
-      'leaf-nodes': ['child11','child12','child13']}),
+      'next-siblings': ["root2","root3"],
+      'children': ["child11","child12","child13"],
+      'descendants': ["child11","child12","child13"],
+      'leaf-nodes': ["child11","child12","child13"]}),
     (u"child11", {
-      'ancestors': ['root1'],
-      'parent': ['root1'],
+      'ancestors': ["root1"],
+      'parent': ["root1"],
       'previous-siblings': [],
-      'next-siblings': ['child12', 'child13'],
+      'next-siblings': ["child12", "child13"],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child12", {
-      'ancestors': ['root1'],
-      'parent': ['root1'],
-      'previous-siblings': ['child11'],
-      'next-siblings': ['child13'],
+      'ancestors': ["root1"],
+      'parent': ["root1"],
+      'previous-siblings': ["child11"],
+      'next-siblings': ["child13"],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child13", {
-      'ancestors': ['root1'],
-      'parent': ['root1'],
-      'previous-siblings': ['child11','child12'],
+      'ancestors': ["root1"],
+      'parent': ["root1"],
+      'previous-siblings': ["child11","child12"],
       'next-siblings': [],
       'children': [],
       'descendants': [],
@@ -274,84 +274,84 @@ class NamedTestCase(TreeTestMixin, TestCase):
     (u"root2", {
       'ancestors': [],
       'parent': [],
-      'previous-siblings': ['root1'],
-      'next-siblings': ['root3'],
-      'children': ['child21','child22','child23'],
+      'previous-siblings': ["root1"],
+      'next-siblings': ["root3"],
+      'children': ["child21","child22","child23"],
       'descendants': [
-        'child21','child211','child212','child2121','child2122','child21221',
-        'child21222','child22','child23'],
-      'leaf-nodes': ['child211','child2121','child21221','child21222',
-        'child22','child23']}),
+        "child21","child211","child212","child2121","child2122","child21221",
+        "child21222","child22","child23"],
+      'leaf-nodes': ["child211","child2121","child21221","child21222",
+        "child22","child23"]}),
     (u"child21", {
-      'ancestors': ['root2'],
-      'parent': ['root2'],
+      'ancestors': ["root2"],
+      'parent': ["root2"],
       'previous-siblings': [],
-      'next-siblings': ['child22','child23'],
-      'children': ['child211','child212'],
+      'next-siblings': ["child22","child23"],
+      'children': ["child211","child212"],
       'descendants': [
-        'child211','child212','child2121','child2122','child21221',
-        'child21222'],
-      'leaf-nodes': ['child211','child2121','child21221','child21222']}),
+        "child211","child212","child2121","child2122","child21221",
+        "child21222"],
+      'leaf-nodes': ["child211","child2121","child21221","child21222"]}),
     (u"child211", {
-      'ancestors': ['root2','child21'],
-      'parent': ['child21'],
+      'ancestors': ["root2","child21"],
+      'parent': ["child21"],
       'previous-siblings': [],
-      'next-siblings': ['child212'],
+      'next-siblings': ["child212"],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child212", {
-      'ancestors': ['root2','child21'],
-      'parent': ['child21'],
-      'previous-siblings': ['child211'],
+      'ancestors': ["root2","child21"],
+      'parent': ["child21"],
+      'previous-siblings': ["child211"],
       'next-siblings': [],
-      'children': ['child2121','child2122'],
-      'descendants': ['child2121','child2122','child21221','child21222'],
-      'leaf-nodes': ['child2121','child21221','child21222']}),
+      'children': ["child2121","child2122"],
+      'descendants': ["child2121","child2122","child21221","child21222"],
+      'leaf-nodes': ["child2121","child21221","child21222"]}),
     (u"child2121", {
-      'ancestors': ['root2','child21','child212'],
-      'parent': ['child212'],
+      'ancestors': ["root2","child21","child212"],
+      'parent': ["child212"],
       'previous-siblings': [],
-      'next-siblings': ['child2122'],
+      'next-siblings': ["child2122"],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child2122", {
-      'ancestors': ['root2','child21','child212'],
-      'parent': ['child212'],
-      'previous-siblings': ['child2121'],
+      'ancestors': ["root2","child21","child212"],
+      'parent': ["child212"],
+      'previous-siblings': ["child2121"],
       'next-siblings': [],
-      'children': ['child21221','child21222'],
-      'descendants': ['child21221','child21222'],
-      'leaf-nodes': ['child21221','child21222']}),
+      'children': ["child21221","child21222"],
+      'descendants': ["child21221","child21222"],
+      'leaf-nodes': ["child21221","child21222"]}),
     (u"child21221", {
-      'ancestors': ['root2','child21','child212','child2122'],
-      'parent': ['child2122'],
+      'ancestors': ["root2","child21","child212","child2122"],
+      'parent': ["child2122"],
       'previous-siblings': [],
-      'next-siblings': ['child21222'],
+      'next-siblings': ["child21222"],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child21222", {
-      'ancestors': ['root2','child21','child212','child2122'],
-      'parent': ['child2122'],
-      'previous-siblings': ['child21221'],
+      'ancestors': ["root2","child21","child212","child2122"],
+      'parent': ["child2122"],
+      'previous-siblings': ["child21221"],
       'next-siblings': [],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child22", {
-      'ancestors': ['root2'],
-      'parent': ['root2'],
-      'previous-siblings': ['child21'],
-      'next-siblings': ['child23'],
+      'ancestors': ["root2"],
+      'parent': ["root2"],
+      'previous-siblings': ["child21"],
+      'next-siblings': ["child23"],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
     (u"child23", {
-      'ancestors': ['root2'],
-      'parent': ['root2'],
-      'previous-siblings': ['child21','child22'],
+      'ancestors': ["root2"],
+      'parent': ["root2"],
+      'previous-siblings': ["child21","child22"],
       'next-siblings': [],
       'children': [],
       'descendants': [],
@@ -359,7 +359,7 @@ class NamedTestCase(TreeTestMixin, TestCase):
     (u"root3", {
       'ancestors': [],
       'parent': [],
-      'previous-siblings': ['root1','root2'],
+      'previous-siblings': ["root1","root2"],
       'next-siblings': [],
       'children': [],
       'descendants': [],
@@ -1953,39 +1953,39 @@ class DeletionTestCase(NamedTestCase):
     (u"root3", {'id':5, 'left':1, 'right':2, 'depth':0}, []),
   ]
   def test_combined_del_123(self):
-    db.session.delete(db.session.query(Named).filter_by(name='root1').one())
-    db.session.delete(db.session.query(Named).filter_by(name='child212').one())
-    db.session.delete(db.session.query(Named).filter_by(name='child23').one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"root1").one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"child212").one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"child23").one())
     db.session.commit()
     self.assertEqual(get_tree_details(), self.combined_del_result)
   def test_combined_del_132(self):
-    db.session.delete(db.session.query(Named).filter_by(name='root1').one())
-    db.session.delete(db.session.query(Named).filter_by(name='child23').one())
-    db.session.delete(db.session.query(Named).filter_by(name='child212').one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"root1").one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"child23").one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"child212").one())
     db.session.commit()
     self.assertEqual(get_tree_details(), self.combined_del_result)
   def test_combined_del_213(self):
-    db.session.delete(db.session.query(Named).filter_by(name='child212').one())
-    db.session.delete(db.session.query(Named).filter_by(name='root1').one())
-    db.session.delete(db.session.query(Named).filter_by(name='child23').one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"child212").one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"root1").one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"child23").one())
     db.session.commit()
     self.assertEqual(get_tree_details(), self.combined_del_result)
   def test_combined_del_231(self):
-    db.session.delete(db.session.query(Named).filter_by(name='child212').one())
-    db.session.delete(db.session.query(Named).filter_by(name='child23').one())
-    db.session.delete(db.session.query(Named).filter_by(name='root1').one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"child212").one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"child23").one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"root1").one())
     db.session.commit()
     self.assertEqual(get_tree_details(), self.combined_del_result)
   def test_combined_del_312(self):
-    db.session.delete(db.session.query(Named).filter_by(name='child23').one())
-    db.session.delete(db.session.query(Named).filter_by(name='root1').one())
-    db.session.delete(db.session.query(Named).filter_by(name='child212').one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"child23").one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"root1").one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"child212").one())
     db.session.commit()
     self.assertEqual(get_tree_details(), self.combined_del_result)
   def test_combined_del_321(self):
-    db.session.delete(db.session.query(Named).filter_by(name='child23').one())
-    db.session.delete(db.session.query(Named).filter_by(name='child212').one())
-    db.session.delete(db.session.query(Named).filter_by(name='root1').one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"child23").one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"child212").one())
+    db.session.delete(db.session.query(Named).filter_by(name=u"root1").one())
     db.session.commit()
     self.assertEqual(get_tree_details(), self.combined_del_result)
 
@@ -2013,92 +2013,92 @@ class ExplicitMoveTestCase(NamedTestCase):
     ]),
   ]
   result_static = [
-    ('action', {
+    (u"action", {
       'ancestors': [],
       'parent': [],
       'previous-siblings': [],
-      'next-siblings': ['rpg'],
-      'children': ['platformer','shmup'],
-      'descendants': ['platformer','platformer_2d','platformer_3d',
-        'platformer_4d','shmup','shmup_vertical','shmup_horizontal'],
-      'leaf-nodes': ['platformer_2d','platformer_3d','platformer_4d',
-        'shmup_vertical','shmup_horizontal']}),
-    ('platformer', {
-      'ancestors': ['action'],
-      'parent': ['action'],
+      'next-siblings': ["rpg"],
+      'children': ["platformer","shmup"],
+      'descendants': ["platformer","platformer_2d","platformer_3d",
+        "platformer_4d","shmup","shmup_vertical","shmup_horizontal"],
+      'leaf-nodes': ["platformer_2d","platformer_3d","platformer_4d",
+        "shmup_vertical","shmup_horizontal"]}),
+    (u"platformer", {
+      'ancestors': ["action"],
+      'parent': ["action"],
       'previous-siblings': [],
-      'next-siblings': ['shmup'],
-      'children': ['platformer_2d','platformer_3d','platformer_4d'],
-      'descendants': ['platformer_2d','platformer_3d','platformer_4d'],
-      'leaf-nodes': ['platformer_2d','platformer_3d','platformer_4d']}),
-    ('platformer_2d', {
-      'ancestors': ['action','platformer'],
-      'parent': ['platformer'],
+      'next-siblings': ["shmup"],
+      'children': ["platformer_2d","platformer_3d","platformer_4d"],
+      'descendants': ["platformer_2d","platformer_3d","platformer_4d"],
+      'leaf-nodes': ["platformer_2d","platformer_3d","platformer_4d"]}),
+    (u"platformer_2d", {
+      'ancestors': ["action","platformer"],
+      'parent': ["platformer"],
       'previous-siblings': [],
-      'next-siblings': ['platformer_3d','platformer_4d'],
+      'next-siblings': ["platformer_3d","platformer_4d"],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
-    ('platformer_3d', {
-      'ancestors': ['action','platformer'],
-      'parent': ['platformer'],
-      'previous-siblings': ['platformer_2d'],
-      'next-siblings': ['platformer_4d'],
+    (u"platformer_3d", {
+      'ancestors': ["action","platformer"],
+      'parent': ["platformer"],
+      'previous-siblings': ["platformer_2d"],
+      'next-siblings': ["platformer_4d"],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
-    ('platformer_4d', {
-      'ancestors': ['action','platformer'],
-      'parent': ['platformer'],
-      'previous-siblings': ['platformer_2d','platformer_3d'],
+    (u"platformer_4d", {
+      'ancestors': ["action","platformer"],
+      'parent': ["platformer"],
+      'previous-siblings': ["platformer_2d","platformer_3d"],
       'next-siblings': [],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
-    ('shmup', {
-      'ancestors': ['action'],
-      'parent': ['action'],
-      'previous-siblings': ['platformer'],
+    (u"shmup", {
+      'ancestors': ["action"],
+      'parent': ["action"],
+      'previous-siblings': ["platformer"],
       'next-siblings': [],
-      'children': ['shmup_vertical','shmup_horizontal'],
-      'descendants': ['shmup_vertical','shmup_horizontal'],
-      'leaf-nodes': ['shmup_vertical','shmup_horizontal']}),
-    ('shmup_vertical', {
-      'ancestors': ['action','shmup'],
-      'parent': ['shmup'],
+      'children': ["shmup_vertical","shmup_horizontal"],
+      'descendants': ["shmup_vertical","shmup_horizontal"],
+      'leaf-nodes': ["shmup_vertical","shmup_horizontal"]}),
+    (u"shmup_vertical", {
+      'ancestors': ["action","shmup"],
+      'parent': ["shmup"],
       'previous-siblings': [],
-      'next-siblings': ['shmup_horizontal'],
+      'next-siblings': ["shmup_horizontal"],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
-    ('shmup_horizontal', {
-      'ancestors': ['action','shmup'],
-      'parent': ['shmup'],
-      'previous-siblings': ['shmup_vertical'],
+    (u"shmup_horizontal", {
+      'ancestors': ["action","shmup"],
+      'parent': ["shmup"],
+      'previous-siblings': ["shmup_vertical"],
       'next-siblings': [],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
-    ('rpg', {
+    (u"rpg", {
       'ancestors': [],
       'parent': [],
-      'previous-siblings': ['action'],
+      'previous-siblings': ["action"],
       'next-siblings': [],
-      'children': ['arpg','trpg'],
-      'descendants': ['arpg','trpg'],
-      'leaf-nodes': ['arpg','trpg']}),
-    ('arpg', {
-      'ancestors': ['rpg'],
-      'parent': ['rpg'],
+      'children': ["arpg","trpg"],
+      'descendants': ["arpg","trpg"],
+      'leaf-nodes': ["arpg","trpg"]}),
+    (u"arpg", {
+      'ancestors': ["rpg"],
+      'parent': ["rpg"],
       'previous-siblings': [],
-      'next-siblings': ['trpg'],
+      'next-siblings': ["trpg"],
       'children': [],
       'descendants': [],
       'leaf-nodes': []}),
-    ('trpg', {
-      'ancestors': ['rpg'],
-      'parent': ['rpg'],
-      'previous-siblings': ['arpg'],
+    (u"trpg", {
+      'ancestors': ["rpg"],
+      'parent': ["rpg"],
+      'previous-siblings': ["arpg"],
       'next-siblings': [],
       'children': [],
       'descendants': [],
@@ -3454,7 +3454,7 @@ class Regression__AddAllDifferentIds(TestCase):
   def tearDown(self):
     db.session.close()
   def test_add_all(self):
-    names = ['root', 'child1', 'child2', 'root2']
+    names = [u"root", u"child1", u"child2", u"root2"]
     nodes = [Named(name=x) for x in names]
     db.session.add_all(nodes)
     db.session.flush()
