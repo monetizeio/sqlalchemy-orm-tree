@@ -570,7 +570,7 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
       parent_id = getattr(target, options.parent_id_field.name)
 
     else:
-      raise ValueError(_(u"an invalid position was given: %s") % position)
+      raise ValueError(u"an invalid position was given: %s" % position)
 
     left_right_change = gap_target - node_left + 1
 
@@ -669,7 +669,7 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
     options = self._tree_options
 
     if node == target:
-      raise InvalidMoveError(_(u"a node may not be made a sibling of itself"))
+      raise InvalidMoveError(u"a node may not be made a sibling of itself")
 
     tree_id        = getattr(node,   options.tree_id_field.name)
     target_tree_id = getattr(target, options.tree_id_field.name)
@@ -682,7 +682,7 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
         gap_target  = target_tree_id
         new_tree_id = target_tree_id + 1
       else:
-        raise ValueError(_(u"an invalid position was given: %s") % position)
+        raise ValueError(u"an invalid position was given: %s" % position)
 
       self._manage_tree_gap(connection, session_objs, gap_target, 1)
       self._make_child_into_root_node(connection, session_objs, node, new_tree_id)
@@ -711,7 +711,7 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
           lower_bound, upper_bound = new_tree_id, tree_id
           shift = 1
       else:
-        raise ValueError(_(u"an invalid position was given: %s") % position)
+        raise ValueError(u"an invalid position was given: %s" % position)
 
       connection.execute(
         options.table.update()
@@ -744,9 +744,9 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
     new_tree_id = getattr(target, options.tree_id_field.name)
 
     if node == target:
-      raise InvalidMove(_(u"a node may not be made a child of itself"))
+      raise InvalidMove(u"a node may not be made a child of itself")
     elif tree_id == new_tree_id:
-      raise InvalidMove(_(u"a node may not be made a child of any of its descendants"))
+      raise InvalidMove(u"a node may not be made a child of any of its descendants")
 
     gap_target, depth_change, left_right_change, parent_id, right_shift = \
       self._calculate_inter_tree_move_values(node, target, position)
@@ -840,9 +840,9 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
     if position in [options.class_manager.POSITION_FIRST_CHILD,
                     options.class_manager.POSITION_LAST_CHILD]:
       if node == target:
-        raise InvalidMoveError(_(u"a node may not be made a child of itself"))
+        raise InvalidMoveError(u"a node may not be made a child of itself")
       elif left < target_left < right:
-        raise InvalidMoveError(_(u"a node may not be made a child of any of its descendants"))
+        raise InvalidMoveError(u"a node may not be made a child of any of its descendants")
 
       if position == options.class_manager.POSITION_FIRST_CHILD:
         if target_left > left:
@@ -864,9 +864,9 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
     elif position in [options.class_manager.POSITION_LEFT,
                       options.class_manager.POSITION_RIGHT]:
       if node == target:
-        raise InvalidMove(_(u"a node may not be made a sibling of itself"))
+        raise InvalidMove(u"a node may not be made a sibling of itself")
       elif left < target_left < right:
-        raise InvalidMove(_(u"a node may not be made a sibling of any of its descendants"))
+        raise InvalidMove(u"a node may not be made a sibling of any of its descendants")
 
       if position == options.class_manager.POSITION_LEFT:
         if target_left > left:
@@ -886,7 +886,7 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
       parent_id = getattr(target, options.parent_id_field.name)
 
     else:
-      raise ValueError(_(u"an invalid position was given: %s") % position)
+      raise ValueError(u"an invalid position was given: %s" % position)
 
     left_boundary     = min(left,  new_left)
     right_boundary    = max(right, new_right)
