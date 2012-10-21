@@ -95,6 +95,8 @@
 
 import sqlalchemy
 
+from .exceptions import InvalidMoveError
+
 __all__ = (
   'TreeMapperExtension',
   'TreeSessionExtension',
@@ -744,9 +746,9 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
     new_tree_id = getattr(target, options.tree_id_field.name)
 
     if node == target:
-      raise InvalidMove(u"a node may not be made a child of itself")
+      raise InvalidMoveError(u"a node may not be made a child of itself")
     elif tree_id == new_tree_id:
-      raise InvalidMove(u"a node may not be made a child of any of its descendants")
+      raise InvalidMoveError(u"a node may not be made a child of any of its descendants")
 
     gap_target, depth_change, left_right_change, parent_id, right_shift = \
       self._calculate_inter_tree_move_values(node, target, position)
@@ -864,9 +866,9 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
     elif position in [options.class_manager.POSITION_LEFT,
                       options.class_manager.POSITION_RIGHT]:
       if node == target:
-        raise InvalidMove(u"a node may not be made a sibling of itself")
+        raise InvalidMoveError(u"a node may not be made a sibling of itself")
       elif left < target_left < right:
-        raise InvalidMove(u"a node may not be made a sibling of any of its descendants")
+        raise InvalidMoveError(u"a node may not be made a sibling of any of its descendants")
 
       if position == options.class_manager.POSITION_LEFT:
         if target_left > left:
