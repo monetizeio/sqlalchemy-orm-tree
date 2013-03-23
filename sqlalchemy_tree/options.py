@@ -256,6 +256,10 @@ class TreeOptions(object):
       if (getattr(prop, 'remote_side', None) is not None and
           getattr(prop.remote_side, 'name', None) == self.pk_field.name):
         return prop.key
+      # Above test works for SQLAlchemy 0.7, the one below for 0.8
+      if (len(getattr(prop, 'remote_side', [])) == 1 and
+          self.pk_field in prop.remote_side):
+        return prop.key
     raise ValueError, \
       u"could not auto-detect parent field name; tree extension will not " \
       u"work property without a parent relationship defined"
