@@ -93,11 +93,12 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # ===----------------------------------------------------------------------===
 
-from .exceptions import *
-from .manager    import *
-from .options    import *
-from .orm        import *
-from .types      import *
+from .exceptions import InvalidMoveError
+from .manager import TreeClassManager, TreeInstanceManager, TreeManager
+from .options import TreeOptions
+from .orm import TreeMapperExtension, TreeSessionExtension
+from .types import TreeDepthType, TreeEndpointType, TreeIdType, \
+    TreeIntegerType, TreeLeftType, TreeRightType
 
 from . import tests
 

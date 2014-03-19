@@ -93,9 +93,9 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # ===----------------------------------------------------------------------===
 
-from .class_   import *
-from .instance import *
-from .unmapped import *
+from .class_ import TreeClassManager
+from .instance import TreeInstanceManager
+from .unmapped import TreeManager
 
 # ===----------------------------------------------------------------------===
 # End of File

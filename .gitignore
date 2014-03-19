@@ -42,3 +42,5 @@ doc/_build
 
 .ropeproject
 .idea
+
+.DS_Store
