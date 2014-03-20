@@ -19,7 +19,9 @@ from .._compat import string_types, PY2
 
 from .helper import unittest
 
+
 class ImportStringError(ImportError):
+
     """Provides information about a failed :func:`import_string` attempt."""
 
     #: String in dotted notation that failed to be imported.
@@ -75,7 +77,7 @@ def import_string(import_name, silent=False):
                    `None` is returned instead.
     :return: imported object
     """
-    #XXX: py3 review needed
+    # XXX: py3 review needed
     assert isinstance(import_name, string_types)
     # force the import name to automatically convert to strings
     import_name = str(import_name)
@@ -162,6 +164,7 @@ def find_all_tests(suite):
 
 
 class BetterLoader(unittest.TestLoader):
+
     """A nicer loader that solves two problems.  First of all we are setting
     up tests from different sources and we're doing this programmatically
     which breaks the default loading logic so this is required anyways.
@@ -208,6 +211,7 @@ def suite():
         suite.addTest(other_suite)
     return suite
 
+
 def main():
     """Runs the testsuite as command line application."""
     try:
@@ -217,4 +221,3 @@ def main():
         import traceback
         traceback.print_exc()
         sys.exit(1)
-

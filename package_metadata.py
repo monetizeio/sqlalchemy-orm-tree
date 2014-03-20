@@ -8,7 +8,8 @@ import os
 import sys
 import re
 
-package_file = os.path.join(os.path.dirname(__file__), "sqlalchemy_tree/__about__.py")
+package_file = os.path.join(
+    os.path.dirname(__file__), "sqlalchemy_tree/__about__.py")
 file_content = open(package_file, "rt").read()
 
 
@@ -28,7 +29,8 @@ class Package_Metadata(dict):
         if mo:
             return mo.group(1)
         else:
-            raise RuntimeError("Unable to find version string in %s." % (package_file,))
+            raise RuntimeError(
+                "Unable to find version string in %s." % (package_file,))
 
     def refresh(self, attributes):
 

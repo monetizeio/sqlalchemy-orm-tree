@@ -11,10 +11,12 @@
 
 
 __all__ = [
-  'InvalidMoveError',
+    'InvalidMoveError',
 ]
 
+
 class InvalidMoveError(Exception):
-  """An invalid node move was attempted. For example, attempting to make a
-  node a child of itself."""
-  pass
+
+    """An invalid node move was attempted. For example, attempting to make a
+    node a child of itself."""
+    pass
