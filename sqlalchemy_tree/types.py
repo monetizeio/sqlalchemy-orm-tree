@@ -13,36 +13,46 @@
 import sqlalchemy
 
 __all__ = (
-  'TreeIdType',
-  'TreeEndpointType',
-  'TreeLeftType',
-  'TreeRightType',
-  'TreeDepthType',
+    'TreeIdType',
+    'TreeEndpointType',
+    'TreeLeftType',
+    'TreeRightType',
+    'TreeDepthType',
 )
 
+
 class TreeIntegerType(sqlalchemy.types.TypeDecorator):
-  "Abstract base class implementing an integer type."
-  impl = sqlalchemy.Integer
+
+    "Abstract base class implementing an integer type."
+    impl = sqlalchemy.Integer
+
 
 class TreeIdType(TreeIntegerType):
-  "Integer field subtype representing an node's tree identifier."
-  pass
+
+    "Integer field subtype representing an node's tree identifier."
+    pass
+
 
 class TreeEndpointType(TreeIntegerType):
-  """Abstract base class of an integer implementing either a “left” or “right”
-  field of a node."""
-  pass
+
+    """Abstract base class of an integer implementing either a “left” or “right”
+    field of a node."""
+    pass
+
 
 class TreeLeftType(TreeEndpointType):
-  "Integer field subtype representing an node's “left” field."
-  pass
+
+    "Integer field subtype representing an node's “left” field."
+    pass
+
 
 class TreeRightType(TreeEndpointType):
-  "Integer field subtype representing an node's “right” level."
-  pass
+
+    "Integer field subtype representing an node's “right” level."
+    pass
+
 
 class TreeDepthType(TreeIntegerType):
-  "Integer field subtype representing an node's depth level."
-  pass
 
-
+    "Integer field subtype representing an node's depth level."
+    pass
