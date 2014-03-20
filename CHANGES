@@ -1,0 +1,22 @@
+=========
+Changelog
+=========
+
+Here you can find the recent changes to sqlalchemy-orm-tree.
+
+.. changelog::
+    :version: dev
+    :released: Ongoing
+
+    .. change::
+        :tags:  docs
+
+      add packaging updates
+
+    .. change::
+        :tags: tests
+
+      Update testsuite to werkzeug/flask format.
+
+
+.. todo:: vim: set filetype=rst:
