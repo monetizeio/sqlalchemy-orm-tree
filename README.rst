@@ -1,11 +1,11 @@
-.. image:: https://travis-ci.org/tony/sqlalchemy-orm-tree.png?branch=master
-    :target: https://travis-ci.org/tony/sqlalchemy-orm-tree
+.. image:: https://travis-ci.org/monetizeio/sqlalchemy-orm-tree.png?branch=master
+    :target: https://travis-ci.org/monetizeio/sqlalchemy-orm-tree
 
 .. image:: https://badge.fury.io/py/sqlalchemy-orm-tree.png
     :target: http://badge.fury.io/py/sqlalchemy-orm-tree
 
-.. image:: https://coveralls.io/repos/tony/sqlalchemy-orm-tree/badge.png?branch=master
-    :target: https://coveralls.io/r/tony/sqlalchemy-orm-tree?branch=master
+.. image:: https://coveralls.io/repos/monetizeio/sqlalchemy-orm-tree/badge.png?branch=master
+    :target: https://coveralls.io/r/monetizeio/sqlalchemy-orm-tree?branch=master
 
 ``sqlalchemy-orm-tree``
 
