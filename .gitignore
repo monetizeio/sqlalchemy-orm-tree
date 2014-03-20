@@ -37,6 +37,8 @@ nosetests.xml
 
 .env
 .env3
+.cache
+Makefile.local
 
 doc/_build
 
