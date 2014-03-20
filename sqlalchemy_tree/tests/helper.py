@@ -1,4 +1,13 @@
 # -*- coding: utf-8 -*-
+"""
+    sqlalchemy_tree.tests.helper
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    :copyright: (C) 2012-2014 the SQLAlchemy-ORM-Tree authors and contributors
+                <see AUTHORS file>.
+    :license: BSD, see LICENSE for more details.
+"""
+
 # Python standard library, unit testing
 try:
     import unittest2 as unittest

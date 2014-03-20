@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+"""
+    sqlalchemy_tree.tests.Named
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    :copyright: (C) 2012-2014 the SQLAlchemy-ORM-Tree authors and contributors
+                <see AUTHORS file>.
+    :license: BSD, see LICENSE for more details.
+"""
 
 import sqlalchemy
 
