@@ -8,6 +8,8 @@
     :license: BSD, see LICENSE for more details.
 """
 
+from __future__ import absolute_import, division, print_function, \
+    with_statement, unicode_literals
 
 from .helper import unittest, Named, db, get_tree_details
 from .Named import NamedTestCase
@@ -1531,7 +1533,6 @@ class ExplicitMoveTestCase(NamedTestCase):
             ]),
         ]
         self._do_insert_and_check(result, node_name, target_name, position)
-
 
 
 def suite():

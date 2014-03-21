@@ -9,6 +9,9 @@
     :license: BSD, see LICENSE for more details.
 """
 
+from __future__ import absolute_import, division, print_function, \
+    with_statement, unicode_literals
+
 import sqlalchemy
 
 from .types import TreeIdType, TreeLeftType, TreeRightType, TreeDepthType

@@ -9,6 +9,8 @@
     :license: BSD, see LICENSE for more details.
 """
 
+from __future__ import absolute_import, division, print_function, \
+    with_statement, unicode_literals
 
 import sqlalchemy
 
@@ -366,26 +368,26 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
                 if (obj_left > left and
                         obj_left < right and
                         obj_depth == depth + 1):
-                          sqlalchemy.orm.attributes.set_committed_value(
-                              obj, options.parent_id_field.name, parent_id)
+                    sqlalchemy.orm.attributes.set_committed_value(
+                        obj, options.parent_id_field.name, parent_id)
                 if (obj_left > left and
                         obj_left < right):
-                          sqlalchemy.orm.attributes.set_committed_value(
-                              obj, options.left_field.name, obj_left - 1)
+                    sqlalchemy.orm.attributes.set_committed_value(
+                        obj, options.left_field.name, obj_left - 1)
                 elif (obj_left > right):
                     sqlalchemy.orm.attributes.set_committed_value(
                         obj, options.left_field.name, obj_left - 2)
                 if (obj_right > left and
                         obj_right < right):
-                          sqlalchemy.orm.attributes.set_committed_value(
-                              obj, options.right_field.name, obj_right - 1)
+                    sqlalchemy.orm.attributes.set_committed_value(
+                        obj, options.right_field.name, obj_right - 1)
                 elif (obj_right > right):
                     sqlalchemy.orm.attributes.set_committed_value(
                         obj, options.right_field.name, obj_right - 2)
                 if (obj_left > left and
                         obj_left < right):
-                          sqlalchemy.orm.attributes.set_committed_value(
-                              obj, options.depth_field.name, obj_depth - 1)
+                    sqlalchemy.orm.attributes.set_committed_value(
+                        obj, options.depth_field.name, obj_depth - 1)
 
     def before_update(self, mapper, connection, node):
         """Called just prior to an existent node being updated.

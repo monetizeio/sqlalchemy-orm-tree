@@ -9,12 +9,15 @@
     :license: BSD, see LICENSE for more details.
 """
 
+from __future__ import absolute_import, division, print_function, \
+    with_statement, unicode_literals
 
 import sqlalchemy
+
 from sqlalchemy.orm.mapper import class_mapper
 
-from sqlalchemy_tree.options import TreeOptions
-from sqlalchemy_tree.orm import TreeMapperExtension, TreeSessionExtension
+from ..options import TreeOptions
+from ..orm import TreeMapperExtension, TreeSessionExtension
 from .instance import TreeInstanceManager
 from .class_ import TreeClassManager
 

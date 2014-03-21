@@ -9,15 +9,19 @@
     :license: BSD, see LICENSE for more details.
 """
 
+from __future__ import absolute_import, division, print_function, \
+    with_statement, unicode_literals
+
+import sys
+import pkgutil
+
+from .._compat import string_types, reraise, PY2
+
+from .helper import unittest
+
 # Code from https://github.com/mitsuhiko/werkzeug
 # Copyright 2013 Werkzeug Team.
 # LICENSE: https://github.com/mitsuhiko/werkzeug/blob/master/LICENSE
-
-import pkgutil
-
-from .._compat import string_types, PY2
-
-from .helper import unittest
 
 
 class ImportStringError(ImportError):
