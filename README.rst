@@ -7,15 +7,23 @@
 .. image:: https://coveralls.io/repos/monetizeio/sqlalchemy-orm-tree/badge.png?branch=master
     :target: https://coveralls.io/r/monetizeio/sqlalchemy-orm-tree?branch=master
 
-``sqlalchemy-orm-tree``
+SQLAlchemy-ORM-tree
+-------------------
+
+An implementation for SQLAlchemy-based applications of the nested-sets /
+modified-pre-order-tree-traversal technique for storing hierarchical data
+in a relational database.
 
 ==============  ==========================================================
 Python support  Python 2.6+ (See `Issue #2 <https://github.com/monetizeio/sqlalchemy-orm-tree/issues/2>`_ for python 3 support status)
 Source          https://github.com/monetizeio/sqlalchemy-orm-tree
 Issues          https://github.com/monetizeio/sqlalchemy-orm-tree/issues
+Docs            https://sqlalchemy-orm-tree.readthedocs.org/
+API             https://sqlalchemy-orm-tree.readthedocs.org/api.html
 Travis          http://travis-ci.org/monetizeio/sqlalchemy-orm-tree
 Test coverage   https://coveralls.io/r/monetizeio/sqlalchemy-orm-tree
 pypi            https://pypi.python.org/pypi/sqlalchemy-orm-tree
+ohloh           http://www.ohloh.net/p/sqlalchemy-orm-tree
 License         `BSD`_.
 git repo        .. code-block:: bash
 
