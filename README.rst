@@ -10,7 +10,7 @@
 ``sqlalchemy-orm-tree``
 
 ==============  ==========================================================
-Python support  Python 2.7, >= 3.3
+Python support  Python 2.6+ (See `Issue #2 <https://github.com/monetizeio/sqlalchemy-orm-tree/issues/2>`_ for python 3 support status)
 Source          https://github.com/monetizeio/sqlalchemy-orm-tree
 Issues          https://github.com/monetizeio/sqlalchemy-orm-tree/issues
 Travis          http://travis-ci.org/monetizeio/sqlalchemy-orm-tree
