@@ -4,11 +4,8 @@ Installation
 
 At the command line::
 
-    $ easy_install sqlalchemy_tree
+    $ easy_install sqlalchemy-orm-tree
 
-Or, if you have `virtualenvwrapper`_ installed::
+Or from pip::
 
-    $ mkvirtualenv myproject
-    $ pip install sqlalchemy_tree
-
-.. _virtualenvwrapper: http://virtualenvwrapper.readthedocs.org/
+    $ pip install sqlalchemy-orm-tree
