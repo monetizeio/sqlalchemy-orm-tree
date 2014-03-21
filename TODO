@@ -1,0 +1,20 @@
+====
+TODO
+====
+
+dev
+---
+
+- Python 2+3 support (`Issue #2`_)
+- Farey fractions isntead of integer intervals (`Issue #4`_)
+- SQLAlchemy 0.9 Declarative syntax support (`Issue #3`_)
+  
+
+For more, see the `issues on github`_:
+
+.. _issues on github: https://github.com/monetizeio/sqlalchemy-orm-tree/issues?page=1&state=open
+.. _Issue #2: https://github.com/monetizeio/sqlalchemy-orm-tree/issues/2
+.. _Issue #3: https://github.com/monetizeio/sqlalchemy-orm-tree/issues/3
+.. _Issue #4: https://github.com/monetizeio/sqlalchemy-orm-tree/issues/4
+
+.. todo:: vim: set filetype=rst:
