@@ -1,7 +1,7 @@
 .. image:: https://travis-ci.org/monetizeio/sqlalchemy-orm-tree.png?branch=master
     :target: https://travis-ci.org/monetizeio/sqlalchemy-orm-tree
 
-.. image:: https://badge.fury.io/py/sqlalchemy-orm-tree.png
+.. image:: https://badge.fury.io/py/SQLAlchemy-ORM-tree.png
     :target: http://badge.fury.io/py/sqlalchemy-orm-tree
 
 .. image:: https://coveralls.io/repos/monetizeio/sqlalchemy-orm-tree/badge.png?branch=master
