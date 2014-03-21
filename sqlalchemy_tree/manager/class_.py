@@ -173,7 +173,7 @@ class TreeClassManager(object):
         # Logical-AND vs. -OR for reduction
         disjoint = kwargs.pop('disjoint',     True)
         for extra in kwargs:
-            raise TypeError, u"unexpected keyword argument '%s'" % extra
+            raise TypeError(u"unexpected keyword argument '%s'" % extra)
 
         def _filter_ancestors_of_node_helper(node):
             # Restrict ourselves to just those nodes within the same tree as
@@ -241,7 +241,7 @@ class TreeClassManager(object):
         # Logical-AND vs. -OR for reduction
         disjoint = kwargs.pop('disjoint',     True)
         for extra in kwargs:
-            raise TypeError, u"unexpected keyword argument '%s'" % extra
+            raise TypeError(u"unexpected keyword argument '%s'" % extra)
 
         def _filter_siblings_of_node_helper(node):
             pk = getattr(node, self.pk_field.name)
@@ -282,7 +282,7 @@ class TreeClassManager(object):
         # Logical-AND vs. -OR for reduction
         disjoint = kwargs.pop('disjoint',     True)
         for extra in kwargs:
-            raise TypeError, u"unexpected keyword argument '%s'" % extra
+            raise TypeError(u"unexpected keyword argument '%s'" % extra)
 
         def _filter_previous_siblings_of_node_helper(node):
             pk = getattr(node, self.pk_field.name)
@@ -335,7 +335,7 @@ class TreeClassManager(object):
         # Logical-AND vs. -OR for reduction
         disjoint = kwargs.pop('disjoint',     True)
         for extra in kwargs:
-            raise TypeError, u"unexpected keyword argument '%s'" % extra
+            raise TypeError(u"unexpected keyword argument '%s'" % extra)
 
         def _filter_next_siblings_of_node_helper(node):
             pk = getattr(node, self.pk_field.name)
@@ -424,7 +424,7 @@ class TreeClassManager(object):
         # Logical-AND vs. -OR for reduction
         disjoint = kwargs.pop('disjoint',     True)
         for extra in kwargs:
-            raise TypeError, u"unexpected keyword argument '%s'" % extra
+            raise TypeError(u"unexpected keyword argument '%s'" % extra)
 
         def _filter_descendants_of_node_helper(node):
             tree_id = getattr(node, self.tree_id_field.name)
@@ -510,7 +510,7 @@ class TreeClassManager(object):
         # Logical-AND vs. -OR for reduction
         disjoint = kwargs.pop('disjoint',     True)
         for extra in kwargs:
-            raise TypeError, u"unexpected keyword argument '%s'" % extra
+            raise TypeError(u"unexpected keyword argument '%s'" % extra)
 
         def _filter_leaf_nodes_of_node_helper(node):
             tree_id = getattr(node, self.tree_id_field.name)
@@ -611,7 +611,7 @@ class TreeClassManager(object):
         include_self = kwargs.pop(
             'include_self', False)  # Include self in results
         for extra in kwargs:
-            raise TypeError, u"unexpected keyword argument '%s'" % extra
+            raise TypeError(u"unexpected keyword argument '%s'" % extra)
         return self._are_ancestors_of_helper(
             True, include_self, descendant, *args)
 
@@ -621,7 +621,7 @@ class TreeClassManager(object):
         include_self = kwargs.pop(
             'include_self', False)  # Include self in results
         for extra in kwargs:
-            raise TypeError, u"unexpected keyword argument '%s'" % extra
+            raise TypeError(u"unexpected keyword argument '%s'" % extra)
         return self._are_ancestors_of_helper(
             False, include_self, descendant, *args)
 
@@ -651,7 +651,7 @@ class TreeClassManager(object):
         include_self = kwargs.pop(
             'include_self', False)  # Include self in results
         for extra in kwargs:
-            raise TypeError, u"unexpected keyword argument '%s'" % extra
+            raise TypeError(u"unexpected keyword argument '%s'" % extra)
         return self._are_siblings_of_helper(True, include_self, sibling, *args)
 
     def all_siblings_of(self, sibling, *args, **kwargs):
@@ -660,7 +660,7 @@ class TreeClassManager(object):
         include_self = kwargs.pop(
             'include_self', False)  # Include self in results
         for extra in kwargs:
-            raise TypeError, u"unexpected keyword argument '%s'" % extra
+            raise TypeError(u"unexpected keyword argument '%s'" % extra)
         return self._are_siblings_of_helper(
             False, include_self, sibling, *args)
 
@@ -711,7 +711,7 @@ class TreeClassManager(object):
         include_self = kwargs.pop(
             'include_self', False)  # Include self in results
         for extra in kwargs:
-            raise TypeError, u"unexpected keyword argument '%s'" % extra
+            raise TypeError(u"unexpected keyword argument '%s'" % extra)
         return self._are_descendants_of_helper(
             True, include_self, ancestor, *args)
 
@@ -721,7 +721,7 @@ class TreeClassManager(object):
         include_self = kwargs.pop(
             'include_self', False)  # Include self in results
         for extra in kwargs:
-            raise TypeError, u"unexpected keyword argument '%s'" % extra
+            raise TypeError(u"unexpected keyword argument '%s'" % extra)
         return self._are_descendants_of_helper(
             False, include_self, ancestor, *args)
 

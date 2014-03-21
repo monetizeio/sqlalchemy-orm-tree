@@ -184,9 +184,9 @@ class TreeOptions(object):
             if (len(getattr(prop, 'remote_side', [])) == 1 and
                     self.pk_field in prop.remote_side):
                 return prop.key
-        raise ValueError, \
-            u"could not auto-detect parent field name; tree extension will not " \
-            u"work property without a parent relationship defined"
+        raise ValueError(
+            u"could not auto-detect parent field name; tree extension will not "
+            u"work property without a parent relationship defined")
 
     def order_by_clause(self):
         """Get an object applicable for usage as an argument for
