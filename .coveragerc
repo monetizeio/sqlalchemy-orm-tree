@@ -1,6 +1,10 @@
 [run]
 omit =
-    */test/*
+    */tests/__init__.py
+    */_compat.py
+    */__init__.py
+    */__about__.py
+
 
 [report]
 exclude_lines =
