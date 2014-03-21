@@ -28,6 +28,10 @@ License         `BSD`_.
 git repo        .. code-block:: bash
 
                     $ git clone https://github.com/monetizeio/sqlalchemy-orm-tree.git
+install         .. code-block:: bash
+
+                    $ pip install sqlalchemy-orm-tree
+
 install dev     .. code-block:: bash
 
                     $ git clone https://github.com/monetizeio/sqlalchemy-orm-tree.git sqlalchemy-orm-tree
