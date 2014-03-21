@@ -133,7 +133,7 @@ class TreeTestMixin(object):
         db.session.close()
 
     def test_fill_tree(self):
-        "Fill the database with ‘_fill_tree()’, and double-check the result"
+        "Fill the database with _fill_tree(), and double-check the result"
         def _check_node(pattern):
             name, fields, children = pattern
             node = db.session.query(Named).filter(named.c.name == name).one()

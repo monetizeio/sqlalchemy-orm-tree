@@ -173,19 +173,19 @@ class NamedTestCase(TreeTestMixin, unittest.TestCase):
     ]
 
     def test_named_hasattr_tree_id(self):
-        "‘named’ table has extra column ‘tree_id’"
+        "named table has extra column tree_id"
         self.assertTrue(hasattr(Named, 'tree_id'))
 
     def test_named_hasattr_tree_left(self):
-        "‘named’ table has extra column ‘tree_left’"
+        "named table has extra column tree_left"
         self.assertTrue(hasattr(Named, 'tree_left'))
 
     def test_named_hasattr_tree_right(self):
-        "‘named’ table has extra column ‘tree_right’"
+        "named table has extra column tree_right"
         self.assertTrue(hasattr(Named, 'tree_right'))
 
     def test_named_hasattr_tree_depth(self):
-        "‘named’ table has extra column ‘tree_depth’"
+        "named table has extra column tree_depth"
         self.assertTrue(hasattr(Named, 'tree_depth'))
 
     def test_named_tree_yields_class_manager(self):
@@ -197,7 +197,7 @@ class NamedTestCase(TreeTestMixin, unittest.TestCase):
         self.assertTrue(isinstance(Named().tree, TreeInstanceManager))
 
     def test_pk_field(self):
-        "Named.tree.pk_field returns ‘id’ column."
+        "Named.tree.pk_field returns id column."
         # Class manager:
         self.assertIsInstance(Named.tree.pk_field, sqlalchemy.schema.Column)
         self.assertEqual(Named.tree.pk_field.name, 'id')
@@ -206,7 +206,7 @@ class NamedTestCase(TreeTestMixin, unittest.TestCase):
         self.assertEqual(Named().tree.pk_field.name, 'id')
 
     def test_parent_id_field(self):
-        "Named.tree.parent_id_field returns ‘parent_id’ column."
+        "Named.tree.parent_id_field returns parent_id column."
         # Class manager:
         self.assertIsInstance(
             Named.tree.parent_id_field, sqlalchemy.schema.Column)
@@ -217,14 +217,14 @@ class NamedTestCase(TreeTestMixin, unittest.TestCase):
         self.assertEqual(Named().tree.parent_id_field.name, 'parent_id')
 
     def test_parent_field_name(self):
-        "Named.tree.parent_field_name returns name of ‘parent’ relationship."
+        "Named.tree.parent_field_name returns name of parent relationship."
         # Class manager:
         self.assertEqual(Named.tree.parent_field_name, 'parent')
         # Instance manager:
         self.assertEqual(Named().tree.parent_field_name, 'parent')
 
     def test_tree_id_field(self):
-        "Named().tree.tree_id_field returns ‘tree_id’ column."
+        "Named().tree.tree_id_field returns tree_id column."
         # Class manager:
         self.assertIsInstance(
             Named.tree.tree_id_field, sqlalchemy.schema.Column)
@@ -239,7 +239,7 @@ class NamedTestCase(TreeTestMixin, unittest.TestCase):
         self.assertEqual(Named().tree.tree_id_field.name,      'tree_id')
 
     def test_left_field(self):
-        "Named().tree.left_field returns ‘tree_left’ column."
+        "Named().tree.left_field returns tree_left column."
         # Class manager:
         self.assertIsInstance(
             Named.tree.left_field, sqlalchemy.schema.Column)
@@ -254,7 +254,7 @@ class NamedTestCase(TreeTestMixin, unittest.TestCase):
         self.assertEqual(Named().tree.left_field.name,      'tree_left')
 
     def test_right_field(self):
-        "Named().tree.right_field returns ‘tree_right’ column."
+        "Named().tree.right_field returns tree_right column."
         # Class manager:
         self.assertIsInstance(
             Named.tree.right_field, sqlalchemy.schema.Column)
@@ -269,7 +269,7 @@ class NamedTestCase(TreeTestMixin, unittest.TestCase):
         self.assertEqual(Named().tree.right_field.name,      'tree_right')
 
     def test_depth_field(self):
-        "Named().tree.depth_field returns ‘tree_depth’ column."
+        "Named().tree.depth_field returns tree_depth column."
         # Class manager:
         self.assertIsInstance(
             Named.tree.depth_field, sqlalchemy.schema.Column)
@@ -284,17 +284,17 @@ class NamedTestCase(TreeTestMixin, unittest.TestCase):
         self.assertEqual(Named().tree.depth_field.name,      'tree_depth')
 
     def test_pk_property(self):
-        "Named().tree.pk returns ‘id’ value."
+        "Named().tree.pk returns id value."
         for node in db.session.query(Named).all():
             self.assertEqual(node.id, node.tree.pk)
 
     def test_parent_id_property(self):
-        "Named().tree.parent_id returns ‘parent_id’ value."
+        "Named().tree.parent_id returns parent_id value."
         for node in db.session.query(Named).all():
             self.assertEqual(node.parent_id, node.tree.parent_id)
 
     def test_parent_property(self):
-        "Named().tree.parent returns ‘parent’ related object."
+        "Named().tree.parent returns parent related object."
         for node in db.session.query(Named).all():
             self.assertEqual(node.parent, node.tree.parent)
 
