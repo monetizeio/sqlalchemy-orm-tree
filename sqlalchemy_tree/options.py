@@ -15,6 +15,7 @@ from __future__ import absolute_import, division, print_function, \
 import sqlalchemy
 
 from .types import TreeIdType, TreeLeftType, TreeRightType, TreeDepthType
+from ._compat import string_types, py2map as map
 
 
 class TreeOptions(object):
@@ -53,7 +54,7 @@ class TreeOptions(object):
         if parent_id_field is None:
             # Auto-detect by building a self-JOIN command:
             self.parent_id_field = table.join(table).onclause.right
-        elif isinstance(parent_id_field, basestring):
+        elif isinstance(parent_id_field, string_types):
             # Column specified by name:
             self.parent_id_field = table.columns[parent_id_field]
         else:
@@ -73,8 +74,7 @@ class TreeOptions(object):
             # If ‘field’ is not specified, we try to autodetect it from the columns
             # of the table based on ‘type_’.
             if field is None:
-                candidates = filter(
-                    lambda c: isinstance(c.type, type_), columns)
+                candidates = [c for c in columns if isinstance(c.type, type_)]
                 if len(candidates) == 1:
                     field = candidates[0]
                 else:
@@ -83,7 +83,7 @@ class TreeOptions(object):
             # We assume that we'll be passed either a string or a SQLAlchemy Column
             # object (duck typing is not allowed). If what we're passed is a Column
             # object, we just need to check that
-            if not isinstance(field, basestring):
+            if not isinstance(field, string_types):
                 assert isinstance(field, sqlalchemy.Column)
                 assert field.table is table
 
@@ -162,9 +162,11 @@ class TreeOptions(object):
     def _get_node_manager_attr(self):
         from .manager import TreeManager
         if self._node_manager_attr is None:
-            self._node_manager_attr = filter(
-                lambda x: isinstance(x[1], TreeManager),
-                self.node_class.__dict__.items())[0][0]
+            self._node_manager_attr = [
+                x for x in
+                self.node_class.__dict__.items()
+                if isinstance(x[1], TreeManager)
+            ][0][0]
         return self._node_manager_attr
 
     def _get_delayed_op_attr(self):

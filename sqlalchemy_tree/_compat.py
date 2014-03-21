@@ -28,6 +28,8 @@ if PY2:
 
     cmp = cmp
 
+    py2map = map
+
     input = raw_input
     from string import lower as ascii_lowercase
     import urlparse
@@ -58,6 +60,15 @@ else:
     range_type = range
 
     cmp = lambda a, b: (a > b) - (a < b)
+
+    from itertools import starmap, zip_longest
+
+    def py2map(func, *iterables):
+        zipped = zip_longest(*iterables)
+        if func is None:
+            # No need for a NOOP lambda here
+            return zipped
+        return list(starmap(func, zipped))
 
     input = input
     from string import ascii_lowercase

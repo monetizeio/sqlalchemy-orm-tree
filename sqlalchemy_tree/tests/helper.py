@@ -75,8 +75,6 @@ mapper(Named, named, properties={
 })
 Named.tree.register()
 
-# ===----------------------------------------------------------------------===
-
 
 def get_tree_details():
     ""
@@ -147,4 +145,3 @@ class TreeTestMixin(object):
         for root in self.name_pattern:
             _check_node(root)
 
-# ===----------------------------------------------------------------------===

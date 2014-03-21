@@ -459,10 +459,17 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
         """Determines the next largest unused tree id."""
         options = self._tree_options
 
-        tree_ids = filter(
-            lambda tree_id: tree_id is not None, [
+        # tree_ids = filter(
+            # lambda tree_id: tree_id is not None, [
+                # getattr(n, options.tree_id_field.name)
+                # for n in session_objs])
+
+        tree_ids = [
+            tree_id for tree_id in [
                 getattr(n, options.tree_id_field.name)
-                for n in session_objs])
+                for n in session_objs
+            ] if tree_id is not None
+        ]
 
         return max(tree_ids + [connection.execute(
             sqlalchemy.select([
@@ -971,9 +978,10 @@ class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
         "Just prior to a flush event, while we still have time to modify the flush plan."
         options = self._tree_options
 
-        session_objs = filter(
-            lambda n: isinstance(n, options.node_class),
-            session.new.union(session.identity_map.values()))
+        session_objs = [
+            n for n in session.new.union(session.identity_map.values())
+            if isinstance(n, options.node_class)
+        ]
 
         for node in session.new.union(session.dirty):
             if not isinstance(node, self._node_class):
