@@ -15,7 +15,7 @@ modified-pre-order-tree-traversal technique for storing hierarchical data
 in a relational database.
 
 ==============  ==========================================================
-Python support  Python 2.6+ (See `Issue #2 <https://github.com/monetizeio/sqlalchemy-orm-tree/issues/2>`_ for python 3 support status)
+Python support  Python 2.6+, 3.3+
 Source          https://github.com/monetizeio/sqlalchemy-orm-tree
 Issues          https://github.com/monetizeio/sqlalchemy-orm-tree/issues
 Docs            https://sqlalchemy-orm-tree.readthedocs.org/

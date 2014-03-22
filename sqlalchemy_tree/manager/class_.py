@@ -9,8 +9,15 @@
     :license: BSD, see LICENSE for more details.
 """
 
+from __future__ import absolute_import, division, print_function, \
+    with_statement, unicode_literals
+
+from functools import reduce
+
 # SQLAlchemy object-relational mapper and SQL expression language
 import sqlalchemy
+
+from .._compat import py2map as map
 
 
 class TreeClassManager(object):

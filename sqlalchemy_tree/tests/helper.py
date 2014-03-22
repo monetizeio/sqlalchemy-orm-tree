@@ -8,6 +8,9 @@
     :license: BSD, see LICENSE for more details.
 """
 
+from __future__ import absolute_import, division, print_function, \
+    with_statement, unicode_literals
+
 # Python standard library, unit testing
 try:
     import unittest2 as unittest
@@ -71,8 +74,6 @@ mapper(Named, named, properties={
                            remote_side=named.c.id),
 })
 Named.tree.register()
-
-# ===----------------------------------------------------------------------===
 
 
 def get_tree_details():
@@ -144,4 +145,3 @@ class TreeTestMixin(object):
         for root in self.name_pattern:
             _check_node(root)
 
-# ===----------------------------------------------------------------------===

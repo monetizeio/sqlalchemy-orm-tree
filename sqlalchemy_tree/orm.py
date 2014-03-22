@@ -9,6 +9,8 @@
     :license: BSD, see LICENSE for more details.
 """
 
+from __future__ import absolute_import, division, print_function, \
+    with_statement, unicode_literals
 
 import sqlalchemy
 
@@ -366,26 +368,26 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
                 if (obj_left > left and
                         obj_left < right and
                         obj_depth == depth + 1):
-                          sqlalchemy.orm.attributes.set_committed_value(
-                              obj, options.parent_id_field.name, parent_id)
+                    sqlalchemy.orm.attributes.set_committed_value(
+                        obj, options.parent_id_field.name, parent_id)
                 if (obj_left > left and
                         obj_left < right):
-                          sqlalchemy.orm.attributes.set_committed_value(
-                              obj, options.left_field.name, obj_left - 1)
+                    sqlalchemy.orm.attributes.set_committed_value(
+                        obj, options.left_field.name, obj_left - 1)
                 elif (obj_left > right):
                     sqlalchemy.orm.attributes.set_committed_value(
                         obj, options.left_field.name, obj_left - 2)
                 if (obj_right > left and
                         obj_right < right):
-                          sqlalchemy.orm.attributes.set_committed_value(
-                              obj, options.right_field.name, obj_right - 1)
+                    sqlalchemy.orm.attributes.set_committed_value(
+                        obj, options.right_field.name, obj_right - 1)
                 elif (obj_right > right):
                     sqlalchemy.orm.attributes.set_committed_value(
                         obj, options.right_field.name, obj_right - 2)
                 if (obj_left > left and
                         obj_left < right):
-                          sqlalchemy.orm.attributes.set_committed_value(
-                              obj, options.depth_field.name, obj_depth - 1)
+                    sqlalchemy.orm.attributes.set_committed_value(
+                        obj, options.depth_field.name, obj_depth - 1)
 
     def before_update(self, mapper, connection, node):
         """Called just prior to an existent node being updated.
@@ -457,10 +459,17 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
         """Determines the next largest unused tree id."""
         options = self._tree_options
 
-        tree_ids = filter(
-            lambda tree_id: tree_id is not None, [
+        # tree_ids = filter(
+            # lambda tree_id: tree_id is not None, [
+                # getattr(n, options.tree_id_field.name)
+                # for n in session_objs])
+
+        tree_ids = [
+            tree_id for tree_id in [
                 getattr(n, options.tree_id_field.name)
-                for n in session_objs])
+                for n in session_objs
+            ] if tree_id is not None
+        ]
 
         return max(tree_ids + [connection.execute(
             sqlalchemy.select([
@@ -969,9 +978,10 @@ class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
         "Just prior to a flush event, while we still have time to modify the flush plan."
         options = self._tree_options
 
-        session_objs = filter(
-            lambda n: isinstance(n, options.node_class),
-            session.new.union(session.identity_map.values()))
+        session_objs = [
+            n for n in session.new.union(session.identity_map.values())
+            if isinstance(n, options.node_class)
+        ]
 
         for node in session.new.union(session.dirty):
             if not isinstance(node, self._node_class):

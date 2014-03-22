@@ -10,6 +10,20 @@ Here you can find the recent changes to sqlalchemy-orm-tree.
 
     .. change::
         :tags:  docs
+        :tickets: 2
+        :pullreq: 20
+
+        - ``__future__`` imports for ``.py`` files.
+        - Replaces some instances of ``filter`` with list comprehensions.
+        - Created a ``py2map`` inside of ``_compat`` to import into code, which preserves python 2.x's ``map`` behavior in python 3.
+        - Update README.rst for python 3 support
+        - Update ``setup.py`` classifier data
+        - Update Travis for python 3.3 support (they don't have 3.4 support yet, tox passes 3.4 for me though)
+        - Import ``reduce`` from ``functools``.
+        - Add ``tox.ini`` file.
+
+    .. change::
+        :tags:  docs
         :tickets: 7
 
         SQLAlchemy-ORM-tree now has a ReadTheDocs page at

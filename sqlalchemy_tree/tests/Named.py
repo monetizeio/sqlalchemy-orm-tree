@@ -11,10 +11,13 @@
 from __future__ import absolute_import, division, print_function, \
     with_statement, unicode_literals
 
+from functools import reduce
+
 import sqlalchemy
 import sqlalchemy_tree
 
 from .. import TreeClassManager, TreeInstanceManager
+from .._compat import py2map as map
 
 from .helper import unittest, TreeTestMixin, db, Named, permutations
 
@@ -1470,7 +1473,6 @@ class NamedTestCase(TreeTestMixin, unittest.TestCase):
             self.assertEqual(
                 names[1] in descendants2 and names[2] in descendants2,
                 Named.tree.all_descendants_of(*nodes, include_self=True))
-
 
 
 def suite():
