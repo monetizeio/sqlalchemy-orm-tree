@@ -3,10 +3,16 @@ python:
   - 2.6
   - 2.7
   - 3.3
+env:
+  - SQLALCHEMY_VERSION=""  # latest
+  - SQLALCHEMY_VERSION="==0.9"
+  - SQLALCHEMY_VERSION="==0.8"
+  - SQLALCHEMY_VERSION="==0.7.5"
 before_install:
   - sudo apt-get update -qq
   - export PIP_USE_MIRRORS=true
   - pip install coveralls
+  - pip install sqlalchemy$SQLALCHEMY_VERSION
 install:
   - "pip install -e ."
 # script: python setup.py test

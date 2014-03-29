@@ -16,6 +16,7 @@ in a relational database.
 
 ==============  ==========================================================
 Python support  Python 2.6+, 3.3+
+SQLAlchemy      SQLAlchemy >=0.7.5, >=0.8, >=0.9
 Source          https://github.com/monetizeio/sqlalchemy-orm-tree
 Issues          https://github.com/monetizeio/sqlalchemy-orm-tree/issues
 Docs            https://sqlalchemy-orm-tree.readthedocs.org/
