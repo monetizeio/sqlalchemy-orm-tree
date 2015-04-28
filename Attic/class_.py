@@ -437,63 +437,6 @@ class TreeClassManager(object):
         self._move_child_node(node, target, position)
     """
 
-  # FIXME: Replace with one method, ``rebuild``, which takes zero or more
-  #        arguments specifying the root nodes of the subtrees to rebuild.
-  def rebuild(self, *args, **kwargs):
-    """Rebuild tree parameters on the basis of adjacency relations for all
-    nodes under the subtrees rooted by the nodes passed as positional
-    arguments. Specifying no positional arguments performs a complete rebuild
-    of all trees.
-
-    :param order_by:
-      an “order by clause” for sorting children nodes of each subtree.
-    """
-    options  = self._tree_options
-    order_by = kwargs.pop('order_by', options.pk_field)
-    session  = kwargs.pop('session',  None)
-
-    if kwargs:
-      if len(kwargs) == 1:
-        message = u"unexpected keyword argument '%s'"
-      else:
-        message = u"unexpected keyword arguments '%s'"
-      raise TypeError(message % "', '".join(kwargs.keys()))
-
-    if session is None:
-      for node in args:
-        session = sqlalchemy.orm.object_session(node)
-        if session is not None:
-          break
-      if session is None:
-        raise ValueError(
-          _(u"must specify session as keyword argument if no bound nodes " \
-            u"are passed in as positional arguments"))
-
-    # FIXME: Should we drop indexing and recreate it after if we're rebuilding
-    #        all the trees?
-    if len(args):
-      args = session.query(self._node_class) \
-                    .filter(options.pk_field.in_(
-                      [getattr(root, options.pk_field.name) for root in args]
-                    )) \
-                    .order_by(order_by) \
-                    .all()
-    else:
-      args = self.query_root_nodes().order_by(order_by).all()
-
-    for root in args:
-      tree_id, left, right, depth = sqlalchemy \
-        .select([options.tree_id_field,
-                 options.left_field,
-                 options.right_field,
-                 options.depth_field]) \
-        .where(options.pk_field == getattr(root, options.pk_field.name)) \
-        .execute() \
-        .fetchone()
-      if order_by is None:
-        order_by = options.pk_field
-      self._do_rebuild_subtree(root, tree_id, left, right, depth, order_by)
-
   #def rebuild_all_trees(self, order_by=None):
   #  """Perform a complete rebuild of all trees on the basis of adjacency relations.
   #
@@ -935,28 +878,6 @@ class TreeClassManager(object):
     setattr(node, options.tree_id_field.name, new_tree_id)
     setattr(node, options.parent_id_field.name,  parent)
     node._mptt_cached_fields[options.parent_id_field.name] = parent.pk
-
-  def _do_rebuild_subtree(self, pk, left, tree_id, depth=0):
-    options = self._tree_options
-    right = left + 1
-
-    qs = self._mptt_filter(parent__pk=pk)
-    if opts.order_insertion_by:
-      qs = qs.order_by(*opts.order_insertion_by)
-    child_ids = qs.values_list('pk', flat=True)
-
-    for child_id in child_ids:
-      right = self._rebuild_helper(child_id, right, tree_id, depth + 1)
-
-    qs = self.model._default_manager.filter(pk=pk)
-    self._mptt_update(qs,
-      left=left,
-      right=right,
-      depth=depth,
-      tree_id=tree_id
-    )
-
-    return right + 1
 
   def _do_rebuild_subtree(self, root_node_id, root_path, root_depth, \
                           tree_id, order_by):

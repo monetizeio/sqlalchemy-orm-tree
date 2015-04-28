@@ -780,6 +780,75 @@ class TreeClassManager(object):
         #       associated with a session.
         return sqlalchemy.orm.object_session(self._get_obj())
 
+    def rebuild(self, *args, **kwargs):
+        """Rebuild tree parameters on the basis of adjacency relations for all
+        nodes under the subtrees rooted by the nodes passed as positional
+        arguments. Specifying no positional arguments performs a complete rebuild
+        of all trees.
+
+        :param order_by:
+          an “order by clause” for sorting children nodes of each subtree.
+
+        TODO: Support order_by. What about the rest of sqlalchemy_tree. Is
+        any order_by used when inserting a new node?
+        """
+        options = self._tree_options
+        order_by = kwargs.pop('order_by', options.pk_field)
+        session = kwargs.pop('session',  None)
+
+        if kwargs:
+            if len(kwargs) == 1:
+                message = u"unexpected keyword argument '%s'"
+            else:
+                message = u"unexpected keyword arguments '%s'"
+            raise TypeError(message % "', '".join(kwargs.keys()))
+
+        if session is None:
+            for node in args:
+                session = sqlalchemy.orm.object_session(node)
+                if session is not None:
+                    break
+            if session is None:
+                raise ValueError(
+                    u"must specify session as keyword argument if no bound "
+                    u"nodes are passed in as positional arguments")
+
+        if len(args):
+            root_node_ids = session.query(self.node_class) \
+                .filter(options.pk_field.in_(
+                [getattr(root, options.pk_field.name) for root in args]
+            )) \
+                .order_by(order_by) \
+                .all()
+        else:
+            root_node_ids = session.execute(
+                sqlalchemy.select([options.pk_field.name]).where(options.parent_id_field==None)
+            ).fetchall()
+
+        for idx, root_node_id in enumerate(root_node_ids):
+            self._do_rebuild_subtree(session, root_node_id[0], 1, idx+1)
+
+        session.commit()
+
+    def _do_rebuild_subtree(self, session, pk, left, tree_id, depth=0):
+        options = self._tree_options
+        right = left + 1
+
+        child_id_results = session.execute(
+            sqlalchemy.select([options.pk_field]).where(options.parent_id_field==pk)
+        ).fetchall()
+        for result in child_id_results:
+            right = self._do_rebuild_subtree(session, result[0], right, tree_id, depth+1)
+
+        session.execute(options.table.update().values({
+            options.tree_id_field.name: tree_id,
+            options.left_field.name: left,
+            options.right_field.name: right,
+            options.depth_field.name: depth,
+        }).where(options.pk_field==pk))
+
+        return right + 1
+
 # FIXME: write a helper routine that converts the args parameters of the
 #   various *_of_node methods into standard form, so that either a positional
 #   list of nodes, or a single list, set, or query object (or filter?) of
