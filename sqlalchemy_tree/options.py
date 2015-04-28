@@ -33,7 +33,8 @@ class TreeOptions(object):
                  tree_id_field=None,
                  left_field=None,
                  right_field=None,
-                 depth_field=None):
+                 depth_field=None,
+                 _attach_columns=True):
         # Record required options for future use:
         self.table = table
         self._node_manager_attr = None
@@ -98,7 +99,8 @@ class TreeOptions(object):
             else:
                 # Column not found; create it:
                 field = sqlalchemy.Column(field, type_(), nullable=False)
-                table.append_column(field)
+                if _attach_columns:
+                    table.append_column(field)
                 # And return (since we know the following checks are
                 # redundant):
                 return field
@@ -131,11 +133,15 @@ class TreeOptions(object):
             self.depth_field,
         )
 
+        if _attach_columns:
+            self.attach_indices()
+
+    def attach_indices(self):
         # To speed up operations, we create an index containing just the core
         # three fields that we care about for tree operations:
         self.indices = [
             sqlalchemy.Index(
-                '__'.join((table.name,
+                '__'.join((self.table.name,
                            self.tree_id_field.name,
                            self.left_field.name,
                            self.right_field.name)),
@@ -149,7 +155,7 @@ class TreeOptions(object):
                 # unique=True
             ),
         ]
-        map(table.append_constraint, self.indices)
+        map(self.table.append_constraint, self.indices)
 
     def class_mapped(self, manager):
         ""
