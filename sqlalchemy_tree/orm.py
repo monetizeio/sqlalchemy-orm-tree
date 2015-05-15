@@ -320,42 +320,55 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
             # Child node, which is much simper than the root node case. We simply
             # update the tree parameters of the children and eliminate the two gaps
             # where the old node's left and right values were.
+
+            # First, we need to update the parent before touching the borns
+            values = {
+                # if left > node.left and left < node.right and depth == node.depth + 1:
+                #   parent = node.parent
+                # else:
+                #   parent = parent
+                options.parent_id_field: sqlalchemy.case([
+                    ((options.left_field > left) & (options.left_field < right) & (options.depth_field == depth + 1), parent_id)
+                ], else_=options.parent_id_field)
+            }
+            # Only update the tree the original node was a part of:
             connection.execute(options.table.update()
-                               .values({
-                                   # if left > node.left and left < node.right and depth == node.depth + 1:
-                                   #   parent = node.parent
-                                   # else:
-                                   #   parent = parent
-                                   options.parent_id_field: sqlalchemy.case(
-                                       [((options.left_field > left) & (options.left_field < right) & (options.depth_field == depth + 1), parent_id)],
-                                       else_=options.parent_id_field),
-                                   # if left > node.left and left < node.right:
-                                   #   left = left - 1
-                                   # elif left > right:
-                                   #   left = left - 2
-                                   # else:
-                                   #   left = left
-                                   options.left_field:      sqlalchemy.case(
-                                       [((options.left_field > left) & (options.left_field < right), options.left_field - 1),
-                                        ((options.left_field > right),                               options.left_field - 2)],
-                                       else_=options.left_field),
-                                   # if right > node.left and right < node.right:
-                                   #   right = right - 1
-                                   # elif right > right:
-                                   #   right = right - 2
-                                   # else:
-                                   #   right = right
-                                   options.right_field:     sqlalchemy.case(
-                                       [((options.right_field > left) & (options.right_field < right), options.right_field - 1),
-                                        ((options.right_field > right),                                options.right_field - 2)],
-                                       else_=options.right_field),
-                                   # if left > node.left and left < node.right:
-                                   #   depth = depth - 1
-                                   # else:
-                                   #   depth = depth
-                                   options.depth_field:     sqlalchemy.case(
-                                       [((options.left_field > left) & (options.left_field < right), options.depth_field - 1)],
-                                       else_=options.depth_field)})
+                                      .values(values)
+                                      .where((options.tree_id_field == tree_id)))
+
+            # Then we can update the left/right/depth fields
+            values = {
+                # if left > node.left and left < node.right:
+                #   depth = depth - 1
+                # else:
+                #   depth = depth
+                options.depth_field: sqlalchemy.case(
+                    [((options.left_field > left) & (options.left_field < right), options.depth_field - 1)],
+                    else_=options.depth_field),
+                # if left > node.left and left < node.right:
+                #   left = left - 1
+                # elif left > right:
+                #   left = left - 2
+                # else:
+                #   left = left
+                options.left_field: sqlalchemy.case([
+                    ((options.left_field > left) & (options.left_field < right), options.left_field - 1),
+                    ((options.left_field > right),                               options.left_field - 2)
+                ], else_=options.left_field),
+                # if right > node.left and right < node.right:
+                #   right = right - 1
+                # elif right > right:
+                #   right = right - 2
+                # else:
+                #   right = right
+                options.right_field: sqlalchemy.case([
+                    ((options.right_field > left) & (options.right_field < right), options.right_field - 1),
+                    ((options.right_field > right),                                options.right_field - 2)
+                ], else_=options.right_field)
+            }
+            # Only update the tree the original node was a part of:
+            connection.execute(options.table.update()
+                               .values(values)
                                # Only update the tree the original node was a part of:
                                .where((options.tree_id_field == tree_id)))
             for obj in session_objs:
