@@ -469,7 +469,8 @@ class TreeClassManager(object):
         if session is None:
             session = self._get_session_from_args_or_self(*args)
         return session.query(self.node_class) \
-                      .filter(self.filter_descendants_of_node(*args, **kwargs))
+                      .filter(self.filter_descendants_of_node(*args, **kwargs))\
+                      .order_by(self)
 
     def filter_leaf_nodes(self):
         "Creates a filter condition containing all leaf nodes."
