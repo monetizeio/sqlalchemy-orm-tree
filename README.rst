@@ -46,3 +46,20 @@ tests           .. code-block:: bash
 ==============  ==========================================================
 
 .. _BSD: http://opensource.org/licenses/BSD-3-Clause
+
+
+Simple Example
+==============
+
+::
+
+    import sqlalchemy_tree
+    Model = declarative_base(metaclass=sqlalchemy_tree.DeclarativeMeta)
+
+    class Page(Model):
+
+        # This activates sqlalchemy-orm-tree.
+        __tree_manager__ = 'tree'
+
+
+Page.tree.register()

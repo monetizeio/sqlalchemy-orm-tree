@@ -13,12 +13,14 @@ from __future__ import absolute_import, division, print_function, \
     with_statement, unicode_literals
 
 import sqlalchemy
+from sqlalchemy.ext.declarative import DeclarativeMeta as BaseDeclarativeMeta
 
 from .exceptions import InvalidMoveError
 
 __all__ = (
     'TreeMapperExtension',
     'TreeSessionExtension',
+    'DeclarativeMeta'
 )
 
 
@@ -1009,3 +1011,85 @@ class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
 
         for node in filter(lambda n: isinstance(n, options.node_class), session.deleted):
             setattr(node, options.delayed_op_attr, session_objs)
+
+
+class DeclarativeMeta(BaseDeclarativeMeta):
+    """
+    Metaclass for declaratively defined node model classes.
+
+    All options that :class:`TreeManager` accepts can be provided
+    with a class property ``__tree_options__``. They are passed on to
+    the :class:`TreeManager` constructor.
+
+    A special class variable ``__tree_manager__`` must exist and hold
+    a string name which will be used as tje `TreeManager`
+    descriptor property.
+    """
+    def __init__(cls, name, bases, dct):
+        from .manager import TreeManager
+
+        # Unless __tree_manager__ defines the name of the manager
+        # we attach, we ignore this class and don't consider it
+        # to be tree-enabled.
+        if not hasattr(cls, '__tree_manager__'):
+            super(DeclarativeMeta, cls).__init__(name, bases, dct)
+            return
+        tree_manager_name = cls.__tree_manager__
+        # preventing the property from being inherited
+        del cls.__tree_manager__
+
+        # Read any options the class defines for the tree manager.
+        opts = {}
+        if hasattr(cls, '__tree_options__'):
+            opts = cls.__tree_options
+            delattr(cls, '__tree_options__')
+
+        # SQLAlchemy will create both the table and the mapper now.
+        super(DeclarativeMeta, cls).__init__(name, bases, dct)
+
+        # Instantiate a TreeManager for the table created by the super call.
+        #
+        # TreeManager would normally auto-attach missing colums to
+        # the table; we skip this here, because here we also need to
+        # add them to the mapper, and doing so will automatically add
+        # them to the table as well; we hae to avoid this conflict.
+        tree_manager = TreeManager(cls.__table__, _attach_columns=False, **opts)
+
+        # Now, all the fields the TreeManager would normally automagically
+        # add to the table, we manually add to the mapper class. SQLAlchemy
+        # will take care of alos adding them as columns to the table.
+        for field in tree_manager.options.required_fields:
+            # Columns get attached to the table here
+            if not hasattr(cls, field.name):
+                # SQLAlchemy 0.5.x needs this:
+                dct[field.name] = field
+                # and SQLAlchemy 0.6.x needs this:
+                setattr(cls, field.name, field)
+
+        # Finally, the indices that TreeManager would normally create were
+        # also skipped due to _attach_columns=False; now that the __table__
+        # has our columns, we can also attach  the indices.
+        tree_manager.options.attach_indices()
+
+        setattr(cls, tree_manager_name, tree_manager)
+        mapper_ext = tree_manager.mapper_extension
+        if hasattr(cls.__mapper__, 'extension'):
+            # SQLAlchemy < 0.7
+            cls.__mapper__.extension.append(mapper_ext)
+        else:
+            # SQLAlchemy 0.7+
+            # We have to setup our event listening here, which register()
+            # does. Unfortunately, the register call is part of
+            # TreeClassManager, which means to access it we need to access
+            # the descriptor TreeManager.__get__, which has some logic to
+            # find the root ORM class of a tree node (in order to support
+            # ORM inheritance properly). This code causes some mapper
+            # validation, which breaks foreign keys to other ORM mappers
+            # that have not yet been defined.
+            # So for now we require the user to manually call
+            # Object.tree.register(), but with some refactoring, we can
+            # move register() upwards, from TreeClassManager to TreeManager,
+            # and make it accessible without this validation, which should
+            # not be necessary at this point.
+            #getattr(cls, tree_manager_name).register()
+            pass
