@@ -1017,6 +1017,14 @@ class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
                 else:
                     position = options.class_manager.POSITION_LAST_CHILD
                     target = getattr(node, options.parent_field_name)
+                    target_id = getattr(node, options.parent_id_field.name)
+                    if not target or target.id != target_id:
+                        # If the parent relationship is not set, or changed,
+                        # try to get it from the parent id column.
+                        if target_id is None:
+                            target = None
+                        else:
+                            target = session.query(options.node_class).get(target_id)
 
                 setattr(
                     node, options.delayed_op_attr,
