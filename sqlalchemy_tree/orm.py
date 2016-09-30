@@ -595,27 +595,30 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
         depth = getattr(node, options.depth_field.name)
         gap_size = right - left + 1
 
+        # Note: For MySQL, the order of the values in the SET clause matters.
+        # http://docs.sqlalchemy.org/en/latest/core/tutorial.html#updates-order-parameters
+        # http://dev.mysql.com/doc/refman/5.7/en/update.html
         connection.execute(
-            options.table.update()
-            .values({
-                options.parent_id_field: sqlalchemy.case(
+            options.table.update(preserve_parameter_order=True)
+            .values([
+                (options.parent_id_field, sqlalchemy.case(
                     [(options.pk_field == getattr(node, options.pk_field.name), parent_id)],
-                    else_=options.parent_id_field),
-                options.tree_id_field:   sqlalchemy.case(
+                    else_=options.parent_id_field)),
+                (options.tree_id_field,   sqlalchemy.case(
                     [((options.left_field >= left) & (options.left_field <= right), new_tree_id)],
-                    else_=options.tree_id_field),
-                options.left_field:      sqlalchemy.case(
+                    else_=options.tree_id_field)),
+                (options.depth_field,     sqlalchemy.case(
+                    [((options.left_field >= left) & (options.left_field <= right), options.depth_field + depth_change)],
+                    else_=options.depth_field)),
+                (options.left_field,      sqlalchemy.case(
                     [((options.left_field >= left) & (options.left_field <= right), options.left_field + left_right_change),
                      ((options.left_field > right),                                options.left_field - gap_size)],
-                    else_=options.left_field),
-                options.right_field:     sqlalchemy.case(
+                    else_=options.left_field)),
+                (options.right_field,     sqlalchemy.case(
                     [((options.right_field >= left) & (options.right_field <= right), options.right_field + left_right_change),
                      ((options.right_field > right),                                 options.right_field - gap_size)],
-                    else_=options.right_field),
-                options.depth_field:     sqlalchemy.case(
-                    [((options.left_field >= left) & (options.left_field <= right), options.depth_field + depth_change)],
-                    else_=options.depth_field),
-            })
+                    else_=options.right_field))
+            ])
             .where(options.tree_id_field == tree_id))
         for obj in session_objs:
             obj_tree_id = getattr(obj, options.tree_id_field.name)
@@ -925,24 +928,27 @@ class TreeMapperExtension(sqlalchemy.orm.interfaces.MapperExtension):
         if left_right_change > 0:
             gap_size = -gap_size
 
+        # Note: For MySQL, the order of the values in the SET clause matters.
+        # http://docs.sqlalchemy.org/en/latest/core/tutorial.html#updates-order-parameters
+        # http://dev.mysql.com/doc/refman/5.7/en/update.html
         connection.execute(
-            options.table.update()
-            .values({
-                options.parent_id_field: sqlalchemy.case(
+            options.table.update(preserve_parameter_order=True)
+            .values([
+                (options.parent_id_field, sqlalchemy.case(
                     [(options.pk_field == getattr(node, options.pk_field.name), parent_id)],
-                    else_=options.parent_id_field),
-                options.left_field:      sqlalchemy.case(
+                    else_=options.parent_id_field)),
+                (options.depth_field,     sqlalchemy.case(
+                    [((options.left_field >= left) & (options.left_field <= right), options.depth_field + depth_change)],
+                    else_=options.depth_field)),
+                (options.left_field,     sqlalchemy.case(
                     [((options.left_field >= left) & (options.left_field <= right),          options.left_field + left_right_change),
                      ((options.left_field >= left_boundary) & (options.left_field <= right_boundary), options.left_field + gap_size)],
-                    else_=options.left_field),
-                options.right_field:     sqlalchemy.case(
+                    else_=options.left_field)),
+                (options.right_field,     sqlalchemy.case(
                     [((options.right_field >= left) & (options.right_field <= right),          options.right_field + left_right_change),
                      ((options.right_field >= left_boundary) & (options.right_field <= right_boundary), options.right_field + gap_size)],
-                    else_=options.right_field),
-                options.depth_field:     sqlalchemy.case(
-                    [((options.left_field >= left) & (options.left_field <= right), options.depth_field + depth_change)],
-                    else_=options.depth_field),
-            })
+                    else_=options.right_field)),
+            ])
             .where(options.tree_id_field == tree_id))
         for obj in session_objs:
             obj_tree_id = getattr(obj, options.tree_id_field.name)
@@ -1002,13 +1008,17 @@ class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
             if not isinstance(node, self._node_class):
                 continue
 
+            parent_field_changed = sqlalchemy.orm.attributes.get_history(
+                    node, options.parent_field_name).has_changes()
+            parent_id_field_changed = sqlalchemy.orm.attributes.get_history(
+                node, options.parent_id_field.name).has_changes()
+
             if hasattr(node, options.delayed_op_attr):
                 setattr(node, options.delayed_op_attr,
                         (getattr(node, options.delayed_op_attr), session_objs))
 
-            elif (node in session.new or
-                  sqlalchemy.orm.attributes.get_history(
-                    node, options.parent_field_name).has_changes()):
+            elif (node in session.new or parent_field_changed or
+                    parent_id_field_changed):
 
                 if (hasattr(options, 'order_with_respect_to') and
                         len(options.order_with_respect_to)):
@@ -1018,12 +1028,13 @@ class TreeSessionExtension(sqlalchemy.orm.interfaces.SessionExtension):
                     position = options.class_manager.POSITION_LAST_CHILD
                     target = getattr(node, options.parent_field_name)
                     target_id = getattr(node, options.parent_id_field.name)
-                    if not target or target.id != target_id:
-                        # If the parent relationship is not set, or changed,
-                        # try to get it from the parent id column.
-                        if target_id is None:
-                            target = None
-                        else:
+
+                    # Query for the parent node based on the id IF:
+                    # - The object is new and we only have the target parent's id.
+                    # - The parent id has changed, but not the parent relationship.
+                    if (session.new and not target) or (
+                            parent_id_field_changed and not parent_field_changed):
+                        if target_id:
                             target = session.query(options.node_class).get(target_id)
 
                 setattr(
